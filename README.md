@@ -29,11 +29,25 @@ pip install -r requirements.txt
 python predict.py --demo
 ```
 
+### RFM Customer Intelligence
+
+A customer analytics project that cleans online retail transactions, scores
+recency, frequency, and monetary value, and explores customer segments in an
+interactive standalone dashboard.
+
+- **Tools:** Python, pandas, NumPy, HTML, CSS, JavaScript
+- **Highlights:** Eight actionable customer segments, cross-filtered dashboard,
+  cohort retention, revenue concentration, product and country analysis, and
+  customer-level export.
+- **Project files and setup:** [Open the RFM Customer Intelligence project](projects/rfm-analysis/README.md)
+- **Source code:** [`projects/rfm-analysis/`](projects/rfm-analysis/)
+
 ## Repository layout
 
 ```text
 projects/
-└── ndr-resolution/    # NDR Resolution System
+├── ndr-resolution/    # NDR Resolution System
+└── rfm-analysis/      # RFM Customer Intelligence
 ```
 
 More projects can be added under `projects/`, with a short overview and link

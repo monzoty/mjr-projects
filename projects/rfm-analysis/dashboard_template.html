@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RFM Customer Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky filter rail over a 12-column console of panels; summary tiles first, customer ledger last. */
+:root{
+  color-scheme:light;
+  --bg:#f3f5f8;--surface:#ffffff;--surface-2:#f7f8fb;--ink:#121722;--ink-2:#465063;--muted:#737c8e;
+  --line:#e2e6ed;--line-2:#d3d9e2;--accent:#2a78d6;--accent-soft:#e3eefb;--focus:#2a78d6;
+  --good:#0ca30c;--warn:#b07800;--crit:#d03b3b;
+  --s0:#2a78d6;--s1:#6250d6;--s2:#1baf7a;--s3:#e87ba4;--s4:#eda100;--s5:#eb6834;--s6:#e34948;--s7:#8a8f98;
+  --q0:#eaf2fc;--q1:#9ec5f4;--q2:#2a78d6;--q3:#0d366b;
+  --muted-dot:#c9cfd9;
+  --font-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --font-data:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --radius:10px;--shadow:0 1px 2px rgba(18,23,34,.05);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0e1116;--surface:#161a21;--surface-2:#1b2029;--ink:#eef1f5;--ink-2:#bcc3d0;--muted:#8b94a6;
+  --line:#262c36;--line-2:#323a46;--accent:#3987e5;--accent-soft:#17283f;--focus:#6da7ec;
+  --good:#3cc23c;--warn:#fab219;--crit:#e66767;
+  --s0:#3987e5;--s1:#9085e9;--s2:#199e70;--s3:#d55181;--s4:#c98500;--s5:#d95926;--s6:#e66767;--s7:#7d828b;
+  --q0:#1a2433;--q1:#1c5cab;--q2:#3987e5;--q3:#b7d3f6;
+  --muted-dot:#39414d;--shadow:none;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0e1116;--surface:#161a21;--surface-2:#1b2029;--ink:#eef1f5;--ink-2:#bcc3d0;--muted:#8b94a6;
+  --line:#262c36;--line-2:#323a46;--accent:#3987e5;--accent-soft:#17283f;--focus:#6da7ec;
+  --good:#3cc23c;--warn:#fab219;--crit:#e66767;
+  --s0:#3987e5;--s1:#9085e9;--s2:#199e70;--s3:#d55181;--s4:#c98500;--s5:#d95926;--s6:#e66767;--s7:#7d828b;
+  --q0:#1a2433;--q1:#1c5cab;--q2:#3987e5;--q3:#b7d3f6;
+  --muted-dot:#39414d;--shadow:none;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--font-body)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.num{font-family:var(--font-data);font-variant-numeric:tabular-nums}
+.wrap{max-width:1400px;margin:0 auto;padding-inline:24px}
+
+/* header */
+.masthead{padding-block:28px 18px}
+.masthead .wrap{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,3.2vw,36px);letter-spacing:-.02em;line-height:1.1;margin:4px 0 6px;text-wrap:balance}
+.lede{margin:0;color:var(--ink-2);max-width:62ch}
+.asof{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.asof b{display:block;color:var(--ink);font-family:var(--font-data);font-weight:500;font-size:13px}
+
+/* filter rail */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.rail .wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-block:10px}
+.field{display:flex;flex-direction:column;gap:2px}
+.field label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+select,input[type=search]{background:var(--surface);border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;min-width:0}
+select{min-width:170px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:4px 6px 4px 10px;font-size:12px}
+.chip button{border:0;background:var(--surface-2);border-radius:999px;width:20px;height:20px;cursor:pointer;line-height:1;color:var(--ink-2)}
+.btn{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:500;font-size:13px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn[disabled]{opacity:.45;cursor:default;color:inherit;border-color:var(--line-2)}
+.rail .status{margin-left:auto;font-size:12px;color:var(--muted);text-align:right}
+.rail .status b{color:var(--ink);font-family:var(--font-data);font-weight:500}
+
+/* grid of panels */
+main{padding-block:18px 40px}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;min-width:0;display:flex;flex-direction:column;gap:10px}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c7{grid-column:span 7}.c6{grid-column:span 6}.c5{grid-column:span 5}.c4{grid-column:span 4}
+.ph{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.ph h2{font-family:var(--font-display);font-weight:700;font-size:17px;letter-spacing:-.01em;margin:0}
+.ph p{margin:2px 0 0;font-size:12px;color:var(--muted);max-width:70ch}
+.seg-toggle{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.seg-toggle button{border:0;background:var(--surface);padding:5px 10px;font-size:12px;cursor:pointer;color:var(--ink-2)}
+.seg-toggle button+button{border-left:1px solid var(--line-2)}
+.seg-toggle button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.note{font-size:11px;color:var(--muted);margin:0}
+svg text{font-family:var(--font-body)}
+.chart{width:100%;display:block;overflow:visible}
+
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;min-width:0;box-shadow:var(--shadow)}
+.kpi .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.kpi .v{font-family:var(--font-data);font-variant-numeric:tabular-nums;font-size:clamp(20px,2vw,26px);font-weight:500;letter-spacing:-.02em;margin-top:4px;white-space:nowrap}
+.kpi .s{font-size:12px;color:var(--ink-2);margin-top:2px}
+.kpi svg{margin-top:6px}
+
+/* segment ledger */
+.ledger{display:flex;flex-direction:column}
+.lrow{display:grid;grid-template-columns:minmax(130px,1.3fr) 64px minmax(110px,2fr) 70px 64px 86px;gap:10px;align-items:center;padding:7px 8px;border-radius:8px;border:1px solid transparent;background:none;text-align:left;cursor:pointer;width:100%}
+.lrow:hover{background:var(--surface-2)}
+.lrow.on{border-color:var(--line-2);background:var(--surface-2)}
+.lrow.dim{opacity:.45}
+.lhead{cursor:default;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.lhead:hover{background:none}
+.lrow .r{text-align:right}
+.sname{display:flex;align-items:center;gap:8px;font-weight:500;min-width:0}
+.sname span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{width:10px;height:10px;border-radius:3px;flex:none}
+.share{display:flex;flex-direction:column;gap:3px}
+.share .bar{height:7px;border-radius:0 4px 4px 0;min-width:2px}
+.share .bar.cust{background:var(--muted-dot)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:14px;height:7px;border-radius:0 3px 3px 0;margin-right:5px;vertical-align:middle}
+.ledger-scroll{overflow-x:auto}
+.ledger-scroll .ledger{min-width:560px}
+
+/* RFM grid */
+.rfm{display:grid;grid-template-columns:28px repeat(5,minmax(0,1fr));gap:4px;align-items:stretch}
+.rfm .ax{font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:center;font-family:var(--font-data)}
+.cell{border:0;border-radius:6px;min-height:58px;padding:6px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;cursor:pointer;position:relative;box-shadow:inset 0 0 0 1px transparent}
+.cell .cv{font-family:var(--font-data);font-size:13px;font-weight:500}
+.cell .cs{font-size:10px;line-height:1.15;opacity:.9}
+.cell.empty{background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,var(--surface) 6px 12px);color:var(--muted);cursor:default}
+.cell.seg{box-shadow:inset 0 0 0 2px var(--ink)}
+.cell.sel{box-shadow:inset 0 0 0 3px var(--ink),0 0 0 2px var(--surface)}
+.cell:not(.empty):hover{filter:brightness(1.06)}
+.rfm-x{text-align:center;font-size:11px;color:var(--muted);margin-top:2px}
+
+/* horizontal bar lists */
+.hlist{display:flex;flex-direction:column;gap:2px}
+.hrow{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,2fr) auto;gap:10px;align-items:center;padding:5px 6px;border-radius:6px;border:0;background:none;text-align:left;width:100%}
+button.hrow{cursor:pointer}
+button.hrow:hover{background:var(--surface-2)}
+.hrow.on{background:var(--accent-soft)}
+.hrow .lab{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow .track{height:10px;border-radius:0 4px 4px 0;background:none}
+.hrow .fill{height:100%;border-radius:0 4px 4px 0;min-width:2px}
+.hrow .val{font-family:var(--font-data);font-size:12px;text-align:right;white-space:nowrap}
+.hrow .val small{color:var(--muted);margin-left:6px}
+.check{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2);cursor:pointer}
+
+/* cohort */
+.cohort-scroll{overflow-x:auto}
+table.cohort{border-collapse:separate;border-spacing:2px;font-size:11px;width:100%;min-width:620px}
+table.cohort th{font-weight:500;color:var(--muted);font-family:var(--font-data);padding:2px 4px;text-align:center;white-space:nowrap}
+table.cohort th.rowh{text-align:left}
+table.cohort td{font-family:var(--font-data);text-align:center;padding:5px 2px;border-radius:4px;white-space:nowrap}
+table.cohort td.size{color:var(--ink-2);text-align:right;padding-right:8px}
+table.cohort td.blank{background:none}
+.scale{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
+.scale .ramp{width:120px;height:8px;border-radius:4px}
+
+/* histograms */
+.hists{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.hists h3{font-size:13px;font-weight:600;margin:0}
+.hists p{font-size:11px;color:var(--muted);margin:0 0 4px}
+
+/* playbook */
+.plays{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.play{border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--surface);text-align:left;cursor:pointer}
+.play:hover{border-color:var(--line-2);background:var(--surface-2)}
+.play.on{border-color:var(--ink);background:var(--surface-2)}
+.play .pt{display:flex;align-items:center;gap:8px;font-weight:600}
+.play .pm{display:flex;gap:12px;font-size:11px;color:var(--muted);font-family:var(--font-data)}
+.play p{margin:0;font-size:12px;color:var(--ink-2)}
+
+/* table */
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tools input{width:200px}
+.tscroll{overflow:auto;max-height:620px;border:1px solid var(--line);border-radius:8px}
+table.cust{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}
+table.cust th{position:sticky;top:0;background:var(--surface-2);z-index:1;text-align:left;padding:0;border-bottom:1px solid var(--line)}
+table.cust th button{all:unset;display:block;padding:9px 12px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;cursor:pointer;width:100%;box-sizing:border-box}
+table.cust th button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+table.cust th.r button,table.cust td.r{text-align:right}
+table.cust th[aria-sort] button{color:var(--ink)}
+table.cust td{padding:8px 12px;border-bottom:1px solid var(--line)}
+table.cust tbody tr{cursor:pointer}
+table.cust tbody tr:hover{background:var(--surface-2)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 8px 2px 6px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);font-size:11px}
+.pips{display:inline-flex;gap:6px;font-family:var(--font-data)}
+.scorebar{display:inline-flex;align-items:center;gap:8px}
+.scorebar span.b{display:inline-block;width:48px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.scorebar span.b i{display:block;height:100%;background:var(--accent)}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.empty-state{padding:28px;text-align:center;color:var(--muted)}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,14,20,.38);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:41;overflow-y:auto;padding:calc(18px + env(safe-area-inset-top,0px)) 20px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px}
+.drawer .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.drawer h2{font-family:var(--font-display);font-size:24px;margin:2px 0 4px}
+.dscore{display:flex;align-items:baseline;gap:6px}
+.dscore b{font-family:var(--font-data);font-size:34px;font-weight:500;letter-spacing:-.03em}
+.meters{display:grid;gap:8px}
+.meter{display:grid;grid-template-columns:86px 1fr 70px;gap:10px;align-items:center;font-size:12px}
+.meter .pp{display:flex;gap:3px}
+.meter .pp i{flex:1;height:8px;border-radius:2px;background:var(--line)}
+.meter .pp i.on{background:var(--accent)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:0}
+.facts dt{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.facts dd{margin:0;font-family:var(--font-data);font-size:14px}
+.callout{border-left:3px solid var(--accent);background:var(--surface-2);padding:10px 12px;border-radius:0 6px 6px 0;font-size:13px;color:var(--ink-2)}
+
+/* tooltip */
+#tip{position:fixed;z-index:60;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:7px 9px;border-radius:6px;max-width:260px;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+#tip b{font-weight:600}
+#tip .tn{font-family:var(--font-data)}
+
+footer{color:var(--muted);font-size:12px}
+footer .grid{gap:14px}
+footer h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px;color:var(--ink-2)}
+footer p,footer li{margin:0 0 4px;max-width:75ch}
+footer ul{margin:0;padding-left:18px}
+
+@media (max-width:1100px){.c8,.c7,.c6,.c5,.c4{grid-column:span 12}.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.plays{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:720px){
+  .wrap{padding-inline:16px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .hists{grid-template-columns:1fr}
+  .plays{grid-template-columns:1fr}
+  .rail .status{margin-left:0;text-align:left;width:100%}
+  select{min-width:0;width:100%}.field{flex:1 1 140px}
+  .tools input{width:100%}.tools{width:100%}
+  .cell{min-height:48px;padding:4px}.cell .cs{display:none}
+}
+@media (prefers-reduced-motion:no-preference){.lrow,.cell,.play,.hrow{transition:background-color .15s,box-shadow .15s,opacity .15s}}
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">Online retail · RFM segmentation</div>
+      <h1>RFM Customer Intelligence</h1>
+      <p class="lede" id="lede">Who buys, how often, how much, and who is drifting away.</p>
+    </div>
+    <div class="asof">
+      <div>Sales period<b id="period">—</b></div>
+      <div>Recency measured to<b id="asofDate">—</b></div>
+      <div>Score weights<b>R 15 · F 28 · M 57</b></div>
+    </div>
+  </div>
+</header>
+
+<div class="rail" role="region" aria-label="Filters">
+  <div class="wrap">
+    <div class="field"><label for="fCountry">Country</label><select id="fCountry"><option value="">All countries</option></select></div>
+    <div class="field"><label for="fSegment">Segment</label><select id="fSegment"><option value="-1">All segments</option></select></div>
+    <span class="chip" id="cellChip" hidden><span id="cellChipText"></span><button type="button" id="cellChipClear" aria-label="Clear RFM cell filter">×</button></span>
+    <button type="button" class="btn" id="reset">Reset filters</button>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="kpis" aria-label="Key metrics" id="kpis"></section>
+
+  <div class="grid">
+    <section class="panel c7" aria-labelledby="hSeg">
+      <div class="ph">
+        <div><h2 id="hSeg">Segment ledger</h2><p>Share of customers against share of revenue. Select a segment to filter the whole dashboard. Country filter applies.</p></div>
+        <div class="legend"><span><i style="background:var(--muted-dot)"></i>Customers</span><span><i style="background:var(--ink-2)"></i>Revenue (segment colour)</span></div>
+      </div>
+      <div class="ledger-scroll"><div class="ledger" id="ledger"></div></div>
+    </section>
+
+    <section class="panel c5" aria-labelledby="hGrid">
+      <div class="ph">
+        <div><h2 id="hGrid">Recency × frequency grid</h2><p>Each cell is an R/F score pair; segments are carved from this grid. Select a cell to filter. Country filter applies.</p></div>
+        <div class="seg-toggle" role="group" aria-label="Grid metric" id="gridMetric">
+          <button type="button" data-v="n" aria-pressed="true">Customers</button><button type="button" data-v="rev" aria-pressed="false">Revenue</button><button type="button" data-v="avg" aria-pressed="false">Avg spend</button>
+        </div>
+      </div>
+      <div class="rfm" id="rfmGrid"></div>
+      <div class="rfm-x">Frequency score →</div>
+      <p class="note" id="gridNote"></p>
+    </section>
+
+    <section class="panel c8" aria-labelledby="hTrend">
+      <div class="ph">
+        <div><h2 id="hTrend">Monthly activity</h2><p id="trendSub">All filters apply.</p></div>
+        <div class="seg-toggle" role="group" aria-label="Trend metric" id="trendMetric">
+          <button type="button" data-v="rev" aria-pressed="true">Revenue</button><button type="button" data-v="orders" aria-pressed="false">Orders</button><button type="button" data-v="active" aria-pressed="false">Active customers</button><button type="button" data-v="new" aria-pressed="false">New customers</button>
+        </div>
+      </div>
+      <div id="trend"></div>
+      <p class="note" id="trendNote"></p>
+    </section>
+
+    <section class="panel c4" aria-labelledby="hPareto">
+      <div class="ph"><div><h2 id="hPareto">Revenue concentration</h2><p>Cumulative share of revenue as customers are added from biggest spender down. All filters apply.</p></div></div>
+      <div id="pareto"></div>
+      <p class="note" id="paretoNote"></p>
+    </section>
+
+    <section class="panel c7" aria-labelledby="hCohort">
+      <div class="ph">
+        <div><h2 id="hCohort">Cohort retention</h2><p>Customers grouped by first purchase month; each cell shows the share who bought again N months later. All filters apply.</p></div>
+        <div class="scale"><span>0%</span><span class="ramp" id="cohortRamp"></span><span id="cohortMax">—</span></div>
+      </div>
+      <div class="cohort-scroll"><table class="cohort" id="cohort"></table></div>
+      <p class="note">The data starts on 1 Dec 2010, so the Dec 2010 cohort includes customers who had bought before then.</p>
+    </section>
+
+    <section class="panel c5" aria-labelledby="hScatter">
+      <div class="ph"><div><h2 id="hScatter">Recency vs lifetime spend</h2><p id="scatterSub">Each dot is a customer. Country filter applies; the segment or cell filter highlights.</p></div></div>
+      <div id="scatter"></div>
+    </section>
+
+    <section class="panel c12" aria-labelledby="hDist">
+      <div class="ph"><div><h2 id="hDist">How customers are distributed</h2><p>Raw R, F and M values behind the scores. All filters apply.</p></div></div>
+      <div class="hists">
+        <div><h3>Recency</h3><p>Days since last purchase</p><div id="hRec"></div></div>
+        <div><h3>Frequency</h3><p>Unique invoices per customer</p><div id="hFreq"></div></div>
+        <div><h3>Monetary</h3><p>Lifetime spend per customer (£)</p><div id="hMon"></div></div>
+      </div>
+    </section>
+
+    <section class="panel c6" aria-labelledby="hCountry">
+      <div class="ph">
+        <div><h2 id="hCountry">Revenue by country</h2><p>Top 12 countries. Segment and cell filters apply. Select a country to filter.</p></div>
+        <label class="check"><input type="checkbox" id="hideUK"> Hide United Kingdom</label>
+      </div>
+      <div class="hlist" id="countries"></div>
+    </section>
+
+    <section class="panel c6" aria-labelledby="hProd">
+      <div class="ph"><div><h2 id="hProd">Top products</h2><p id="prodSub">By revenue. Segment filter applies.</p></div></div>
+      <div class="hlist" id="products"></div>
+    </section>
+
+    <section class="panel c12" aria-labelledby="hPlay">
+      <div class="ph"><div><h2 id="hPlay">Action playbook</h2><p>What to do with each segment. Figures follow the country filter. Select a card to focus the dashboard on that segment.</p></div></div>
+      <div class="plays" id="plays"></div>
+    </section>
+
+    <section class="panel c12" aria-labelledby="hCust">
+      <div class="ph">
+        <div><h2 id="hCust">Customer ledger</h2><p>All filters apply. Select a column to sort and a row to open the customer profile.</p></div>
+        <div class="tools">
+          <input type="search" id="search" placeholder="Find a customer ID" aria-label="Find a customer ID">
+          <button type="button" class="btn" id="dl">Download CSV</button>
+          <button type="button" class="btn" id="copy">Copy CSV</button>
+        </div>
+      </div>
+      <div class="tscroll"><table class="cust"><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table><div class="empty-state" id="tEmpty" hidden>No customers match these filters.</div></div>
+      <div class="pager"><span id="pageInfo"></span><span><button type="button" class="btn" id="prev">Previous</button> <button type="button" class="btn" id="next">Next</button></span></div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="grid">
+      <div class="c6">
+        <h3>Method</h3>
+        <p>Recency is whole days from the last purchase to midnight after the analysis date. Frequency counts unique invoices. Monetary is the sum of quantity × unit price.</p>
+        <p>Each dimension is ranked into a 1–5 score (5 is best) using average-rank percentiles. The RFM score weights recency 15%, frequency 28% and monetary 57%, scaled to 100. Segments are assigned from the R and F scores only, so high spenders who have lapsed still show up as at risk.</p>
+      </div>
+      <div class="c6">
+        <h3>Data cleaning</h3>
+        <ul id="audit"></ul>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-labelledby="dTitle" role="dialog" aria-modal="true"></aside>
+<div id="tip" hidden></div>
+
+<script type="application/json" id="dashboard-data">__DASHBOARD_DATA__</script>
+<script>
+(() => {
+"use strict";
+const D = JSON.parse(document.getElementById("dashboard-data").textContent);
+const SEG = D.segments.map(s => s.name);
+const MONTHS = D.months;
+const C = D.customers.map(a => {
+  const hist = [];
+  for (let i = 0; i < a[13].length; i += 3) hist.push({m: a[13][i], rev: a[13][i + 1], orders: a[13][i + 2]});
+  return {id: a[0], country: D.countries[a[1]], last: a[2], rec: a[3], freq: a[4], mon: a[5], r: a[6], f: a[7], m: a[8],
+          score: a[9], seg: a[10], units: a[11], prods: a[12], hist, first: hist.length ? hist[0].m : 0, aov: a[5] / a[4]};
+});
+const TOTAL_REV = C.reduce((s, c) => s + c.mon, 0);
+const state = {country: "", seg: -1, cell: null, search: "", sort: {key: "mon", dir: -1}, page: 0, trend: "rev", grid: "n", hideUK: false};
+const PAGE = 25;
+
+/* ---------- formatting ---------- */
+const nf = new Intl.NumberFormat("en-GB");
+const gbp = new Intl.NumberFormat("en-GB", {style: "currency", currency: "GBP", maximumFractionDigits: 0});
+const gbp2 = new Intl.NumberFormat("en-GB", {style: "currency", currency: "GBP", minimumFractionDigits: 2, maximumFractionDigits: 2});
+const pct = (v, d = 1) => (isFinite(v) ? (v * 100).toFixed(d) : "0") + "%";
+function compact(v, money) {
+  const a = Math.abs(v), p = money ? "£" : "";
+  if (a >= 1e6) return p + (v / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M";
+  if (a >= 1e3) return p + (v / 1e3).toFixed(a >= 1e4 ? 0 : 1).replace(/\.0$/, "") + "k";
+  return p + nf.format(Math.round(v));
+}
+const monthLabel = (ym, long) => {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-GB", {month: "short", year: long ? "numeric" : "2-digit", timeZone: "UTC"});
+};
+const dateLabel = iso => new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", {day: "numeric", month: "short", year: "numeric", timeZone: "UTC"});
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[ch]));
+const median = arr => { if (!arr.length) return NaN; const s = [...arr].sort((a, b) => a - b), h = s.length >> 1; return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
+
+/* ---------- theme helpers ---------- */
+let css;
+const tok = n => css.getPropertyValue(n).trim();
+const segColor = i => tok("--s" + i);
+function hexRgb(h) { h = h.replace("#", ""); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+function mix(a, b, t) { const A = hexRgb(a), B = hexRgb(b); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); }
+function seq(t) {
+  t = Math.max(0, Math.min(1, t));
+  const stops = [tok("--q0"), tok("--q1"), tok("--q2"), tok("--q3")], x = t * 3, i = Math.min(2, Math.floor(x));
+  return mix(stops[i], stops[i + 1], x - i);
+}
+function inkOn(hex) {
+  const [r, g, b] = hexRgb(hex).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); });
+  return .2126 * r + .7152 * g + .0722 * b > .32 ? "#121722" : "#ffffff";
+}
+
+/* ---------- svg + tooltip ---------- */
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function newSvg(host, h) {
+  const w = Math.max(240, host.clientWidth || 300);
+  host.replaceChildren();
+  const s = el("svg", {viewBox: `0 0 ${w} ${h}`, width: w, height: h, class: "chart", role: "img"}, host);
+  return [s, w];
+}
+const tip = document.getElementById("tip");
+function showTip(html, ev) {
+  tip.innerHTML = html; tip.hidden = false;
+  const pad = 14, r = tip.getBoundingClientRect();
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - pad;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - pad;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+const hideTip = () => { tip.hidden = true; };
+function niceScale(max, ticks = 4) {
+  if (!(max > 0)) return {max: 1, step: .25};
+  const raw = max / ticks, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw);
+  return {max: Math.ceil(max / step) * step, step};
+}
+const topRounded = (x, y, w, h, r) => {
+  r = Math.min(r, w / 2, h);
+  if (h <= 0) return "";
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+};
+
+/* vertical bars with hover columns */
+function vbars(host, {labels, values, color, height = 220, yFmt, tipFn, partial = -1, labelEvery, onClick, highlight = -1}) {
+  const [s, w] = newSvg(host, height);
+  const L = 46, R = 6, T = 10, B = 26, pw = w - L - R, ph = height - T - B;
+  const {max, step} = niceScale(Math.max(0, ...values));
+  for (let v = 0; v <= max + 1e-9; v += step) {
+    const y = T + ph - ph * v / max;
+    el("line", {x1: L, x2: w - R, y1: y, y2: y, stroke: tok("--line"), "stroke-width": 1}, s);
+    el("text", {x: L - 6, y: y + 3.5, "text-anchor": "end", "font-size": 10, fill: tok("--muted")}, s).textContent = yFmt(v);
+  }
+  const n = values.length, band = pw / n, bw = Math.max(3, Math.min(48, band * .66));
+  const every = labelEvery || Math.max(1, Math.ceil(n / Math.max(2, Math.floor(pw / 52))));
+  let pat;
+  if (partial >= 0) {
+    const defs = el("defs", {}, s);
+    pat = el("pattern", {id: "hatch" + host.id, width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)"}, defs);
+    el("rect", {width: 6, height: 6, fill: color, "fill-opacity": .35}, pat);
+    el("line", {x1: 0, y1: 0, x2: 0, y2: 6, stroke: color, "stroke-width": 3}, pat);
+  }
+  values.forEach((v, i) => {
+    const x = L + band * i + (band - bw) / 2, h = ph * v / max, y = T + ph - h;
+    const fill = i === partial ? `url(#hatch${host.id})` : color;
+    const bar = el("path", {d: topRounded(x, y, bw, h, 4), fill, opacity: highlight >= 0 && i !== highlight ? .35 : 1}, s);
+    if (i % every === 0 || i === n - 1)
+      el("text", {x: L + band * i + band / 2, y: height - 8, "text-anchor": "middle", "font-size": 10, fill: tok("--muted")}, s).textContent = labels[i];
+    const hit = el("rect", {x: L + band * i, y: T, width: band, height: ph, fill: "transparent", style: onClick ? "cursor:pointer" : ""}, s);
+    hit.addEventListener("mousemove", ev => { bar.setAttribute("opacity", .8); showTip(tipFn(i), ev); });
+    hit.addEventListener("mouseleave", () => { bar.setAttribute("opacity", highlight >= 0 && i !== highlight ? .35 : 1); hideTip(); });
+    if (onClick) hit.addEventListener("click", () => onClick(i));
+  });
+  el("line", {x1: L, x2: w - R, y1: T + ph, y2: T + ph, stroke: tok("--line-2")}, s);
+  return s;
+}
+
+/* ---------- filtering ---------- */
+const inCountry = c => !state.country || c.country === state.country;
+const inSeg = c => state.seg < 0 || c.seg === state.seg;
+const inCell = c => !state.cell || (c.r === state.cell[0] && c.f === state.cell[1]);
+const focusActive = () => state.seg >= 0 || !!state.cell;
+
+/* ---------- KPIs ---------- */
+function sparkline(values, w, h, color) {
+  const s = el("svg", {viewBox: `0 0 ${w} ${h}`, width: "100%", height: h, preserveAspectRatio: "none", "aria-hidden": "true"});
+  const max = Math.max(1, ...values), step = w / (values.length - 1);
+  const pts = values.map((v, i) => [i * step, h - 2 - (h - 4) * v / max]);
+  el("path", {d: "M" + pts.map(p => p.join(",")).join("L") + `L${w},${h}L0,${h}Z`, fill: color, "fill-opacity": .12}, s);
+  el("path", {d: "M" + pts.map(p => p.join(",")).join("L"), fill: "none", stroke: color, "stroke-width": 1.5, "vector-effect": "non-scaling-stroke"}, s);
+  return s;
+}
+function renderKpis(F) {
+  const rev = F.reduce((s, c) => s + c.mon, 0), orders = F.reduce((s, c) => s + c.freq, 0);
+  const repeat = F.filter(c => c.freq > 1).length, monthly = monthlySeries(F).rev;
+  const filtered = F.length !== C.length;
+  const tiles = [
+    ["Customers", nf.format(F.length), filtered ? pct(F.length / C.length) + " of all customers" : nf.format(orders) + " orders in total"],
+    ["Revenue", compact(rev, true), filtered ? pct(rev / TOTAL_REV) + " of all revenue" : gbp.format(rev), true],
+    ["Avg order value", F.length ? gbp2.format(rev / orders) : "—", "Revenue ÷ unique invoices"],
+    ["Revenue per customer", F.length ? gbp.format(rev / F.length) : "—", F.length ? "Median " + gbp.format(median(F.map(c => c.mon))) : "No customers"],
+    ["Repeat customers", F.length ? pct(repeat / F.length) : "—", nf.format(repeat) + " placed 2+ orders"],
+    ["Median recency", F.length ? Math.round(median(F.map(c => c.rec))) + " days" : "—", F.length ? pct(F.filter(c => c.rec <= 90).length / F.length, 0) + " bought in last 90 days" : ""],
+  ];
+  const host = document.getElementById("kpis");
+  host.replaceChildren();
+  tiles.forEach(([k, v, sub, spark]) => {
+    const d = document.createElement("article");
+    d.className = "kpi";
+    d.innerHTML = `<div class="k">${k}</div><div class="v">${v}</div><div class="s">${sub}</div>`;
+    if (spark && F.length) d.appendChild(sparkline(MONTHS.slice(0, D.lastMonthPartial ? -1 : undefined).map((_, i) => monthly[i]), 120, 26, tok("--accent")));
+    host.appendChild(d);
+  });
+}
+
+/* ---------- segment ledger ---------- */
+function renderLedger(base) {
+  const host = document.getElementById("ledger");
+  const tot = base.length, rev = base.reduce((s, c) => s + c.mon, 0);
+  const rows = SEG.map((name, i) => {
+    const g = base.filter(c => c.seg === i), r = g.reduce((s, c) => s + c.mon, 0);
+    return {i, name, n: g.length, rev: r, cs: tot ? g.length / tot : 0, rs: rev ? r / rev : 0,
+            rec: g.length ? g.reduce((s, c) => s + c.rec, 0) / g.length : 0, freq: g.length ? g.reduce((s, c) => s + c.freq, 0) / g.length : 0};
+  });
+  const maxShare = Math.max(.01, ...rows.map(r => Math.max(r.cs, r.rs)));
+  host.innerHTML = `<div class="lrow lhead"><span>Segment</span><span class="r">Customers</span><span>Share of customers / revenue</span><span class="r">Avg recency</span><span class="r">Avg orders</span><span class="r">Revenue</span></div>`;
+  rows.forEach(r => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "lrow" + (state.seg === r.i ? " on" : "") + (state.seg >= 0 && state.seg !== r.i ? " dim" : "");
+    b.setAttribute("aria-pressed", state.seg === r.i);
+    b.innerHTML = `<span class="sname"><span class="dot" style="background:${segColor(r.i)}"></span><span>${r.name}</span></span>
+      <span class="r num">${nf.format(r.n)}</span>
+      <span class="share"><span class="bar cust" style="width:${r.cs / maxShare * 100}%"></span><span class="bar" style="width:${r.rs / maxShare * 100}%;background:${segColor(r.i)}"></span></span>
+      <span class="r num">${r.n ? Math.round(r.rec) + "d" : "—"}</span>
+      <span class="r num">${r.n ? r.freq.toFixed(1) : "—"}</span>
+      <span class="r num">${compact(r.rev, true)}</span>`;
+    b.addEventListener("mousemove", ev => showTip(`<b>${r.name}</b><br><span class="tn">${pct(r.cs)}</span> of customers · <span class="tn">${pct(r.rs)}</span> of revenue<br>Revenue <span class="tn">${gbp.format(r.rev)}</span>`, ev));
+    b.addEventListener("mouseleave", hideTip);
+    b.addEventListener("click", () => setSeg(state.seg === r.i ? -1 : r.i));
+    host.appendChild(b);
+  });
+}
+
+/* ---------- RFM grid ---------- */
+function renderGrid(base) {
+  const host = document.getElementById("rfmGrid");
+  host.replaceChildren();
+  const cells = {};
+  base.forEach(c => { const k = c.r + "-" + c.f; (cells[k] ||= {n: 0, rev: 0}); cells[k].n++; cells[k].rev += c.mon; });
+  const val = c => !c ? 0 : state.grid === "n" ? c.n : state.grid === "rev" ? c.rev : c.rev / c.n;
+  const max = Math.max(1e-9, ...Object.values(cells).map(val));
+  const fmt = v => state.grid === "n" ? nf.format(v) : compact(v, true);
+  const emptyCols = new Set();
+  for (let f = 1; f <= 5; f++) if (![1, 2, 3, 4, 5].some(r => cells[r + "-" + f])) emptyCols.add(f);
+  for (let r = 5; r >= 1; r--) {
+    const ax = document.createElement("div"); ax.className = "ax"; ax.textContent = "R" + r; host.appendChild(ax);
+    for (let f = 1; f <= 5; f++) {
+      const c = cells[r + "-" + f], segName = D.grid[r - 1][f - 1], si = SEG.indexOf(segName);
+      const b = document.createElement("button");
+      b.type = "button";
+      if (!c) {
+        b.className = "cell empty"; b.disabled = true;
+        b.innerHTML = `<span class="cv">—</span><span class="cs">${segName}</span>`;
+        b.setAttribute("aria-label", `R${r} F${f}: no customers`);
+      } else {
+        const v = val(c), bg = seq(Math.sqrt(v / max)), fg = inkOn(bg);
+        const sel = state.cell && state.cell[0] === r && state.cell[1] === f;
+        b.className = "cell" + (sel ? " sel" : "") + (!state.cell && state.seg === si ? " seg" : "");
+        b.style.background = bg; b.style.color = fg;
+        b.innerHTML = `<span class="cv">${fmt(v)}</span><span class="cs">${segName}</span>`;
+        b.setAttribute("aria-label", `R${r} F${f}, ${segName}: ${nf.format(c.n)} customers, ${gbp.format(c.rev)} revenue`);
+        b.setAttribute("aria-pressed", sel);
+        b.addEventListener("mousemove", ev => showTip(`<b>R${r} · F${f}</b> — ${segName}<br>Customers <span class="tn">${nf.format(c.n)}</span><br>Revenue <span class="tn">${gbp.format(c.rev)}</span><br>Avg spend <span class="tn">${gbp.format(c.rev / c.n)}</span>`, ev));
+        b.addEventListener("mouseleave", hideTip);
+        b.addEventListener("click", () => { state.cell = sel ? null : [r, f]; state.page = 0; renderAll(); });
+      }
+      host.appendChild(b);
+    }
+  }
+  const foot = document.createElement("div"); foot.className = "ax"; foot.textContent = "";
+  host.appendChild(foot);
+  for (let f = 1; f <= 5; f++) { const a = document.createElement("div"); a.className = "ax"; a.textContent = "F" + f; host.appendChild(a); }
+  document.getElementById("gridNote").textContent = emptyCols.size
+    ? `No customer scores F${[...emptyCols].join(", F")}: ${pct(base.filter(c => c.freq === 1).length / Math.max(1, base.length), 0)} of customers placed exactly one order, and that large tie shares one average rank, so the next frequency band starts at F3.`
+    : "";
+}
+
+/* ---------- monthly series ---------- */
+function monthlySeries(F) {
+  const n = MONTHS.length, rev = Array(n).fill(0), orders = Array(n).fill(0), active = Array(n).fill(0), fresh = Array(n).fill(0);
+  F.forEach(c => { fresh[c.first]++; c.hist.forEach(h => { rev[h.m] += h.rev; orders[h.m] += h.orders; active[h.m]++; }); });
+  return {rev, orders, active, new: fresh};
+}
+function renderTrend(F) {
+  const ser = monthlySeries(F), key = state.trend, vals = ser[key];
+  const money = key === "rev", partial = D.lastMonthPartial ? MONTHS.length - 1 : -1;
+  const names = {rev: "Revenue", orders: "Orders", active: "Active customers", new: "New customers"};
+  const color = state.seg >= 0 ? segColor(state.seg) : tok("--accent");
+  vbars(document.getElementById("trend"), {
+    labels: MONTHS.map(m => monthLabel(m)), values: vals, color, height: 250, partial,
+    yFmt: v => compact(v, money),
+    tipFn: i => `<b>${monthLabel(MONTHS[i], true)}${i === partial ? " (to " + dateLabel(D.asOf) + ")" : ""}</b><br>${names[key]} <span class="tn">${money ? gbp.format(vals[i]) : nf.format(vals[i])}</span>` +
+      (key === "rev" && ser.orders[i] ? `<br>Avg order <span class="tn">${gbp2.format(vals[i] / ser.orders[i])}</span>` : "") +
+      (key === "active" ? `<br>of which new <span class="tn">${nf.format(ser.new[i])}</span>` : ""),
+  });
+  const full = vals.slice(0, partial >= 0 ? partial : undefined), best = full.indexOf(Math.max(...full));
+  document.getElementById("trendSub").textContent = `${names[key]} per invoice month. All filters apply.`;
+  const notes = [];
+  if (F.length && best >= 0) notes.push(`Peak: ${monthLabel(MONTHS[best], true)} at ${money ? gbp.format(full[best]) : nf.format(full[best])}.`);
+  if (partial >= 0) notes.push(`${monthLabel(MONTHS[partial], true)} is hatched because it only runs to ${dateLabel(D.asOf)}.`);
+  if (key === "new") notes.push("Dec 2010 counts every customer seen in the first month of data as new.");
+  document.getElementById("trendNote").textContent = notes.join(" ");
+}
+
+/* ---------- pareto ---------- */
+function renderPareto(F) {
+  const host = document.getElementById("pareto"), h = 250;
+  const [s, w] = newSvg(host, h);
+  const L = 40, R = 10, T = 10, B = 28, pw = w - L - R, ph = h - T - B;
+  const sorted = F.map(c => c.mon).sort((a, b) => b - a), tot = sorted.reduce((a, b) => a + b, 0), n = sorted.length;
+  for (let v = 0; v <= 1; v += .25) {
+    const y = T + ph * (1 - v), x = L + pw * v;
+    el("line", {x1: L, x2: w - R, y1: y, y2: y, stroke: tok("--line")}, s);
+    el("text", {x: L - 6, y: y + 3.5, "text-anchor": "end", "font-size": 10, fill: tok("--muted")}, s).textContent = v * 100 + "%";
+    el("text", {x, y: h - 10, "text-anchor": "middle", "font-size": 10, fill: tok("--muted")}, s).textContent = v * 100 + "%";
+  }
+  if (!n || !tot) { document.getElementById("paretoNote").textContent = "No customers match these filters."; return; }
+  const cum = [0]; let acc = 0;
+  const stride = Math.max(1, Math.floor(n / 400));
+  for (let i = 0; i < n; i++) { acc += sorted[i]; if ((i + 1) % stride === 0 || i === n - 1) cum.push([(i + 1) / n, acc / tot]); }
+  const pts = [[0, 0], ...cum.slice(1)].map(([x, y]) => [L + pw * x, T + ph * (1 - y)]);
+  el("line", {x1: L, y1: T + ph, x2: w - R, y2: T, stroke: tok("--line-2"), "stroke-dasharray": "3 4"}, s);
+  el("path", {d: "M" + pts.map(p => p.map(v => v.toFixed(1)).join(",")).join("L") + `L${L + pw},${T + ph}Z`, fill: tok("--accent"), "fill-opacity": .1}, s);
+  el("path", {d: "M" + pts.map(p => p.map(v => v.toFixed(1)).join(",")).join("L"), fill: "none", stroke: tok("--accent"), "stroke-width": 2}, s);
+  const shareAt = q => { const k = Math.max(1, Math.round(n * q)); let a = 0; for (let i = 0; i < k; i++) a += sorted[i]; return a / tot; };
+  const s20 = shareAt(.2), s1 = shareAt(.01);
+  const mx = L + pw * .2, my = T + ph * (1 - s20);
+  el("line", {x1: mx, x2: mx, y1: my, y2: T + ph, stroke: tok("--ink-2"), "stroke-dasharray": "2 3"}, s);
+  el("circle", {cx: mx, cy: my, r: 4.5, fill: tok("--accent"), stroke: tok("--surface"), "stroke-width": 2}, s);
+  el("text", {x: mx + 8, y: my + 14, "font-size": 11, fill: tok("--ink"), "font-weight": 600}, s).textContent = `Top 20% → ${pct(s20, 0)}`;
+  const guide = el("line", {y1: T, y2: T + ph, stroke: tok("--ink-2"), visibility: "hidden"}, s);
+  const dotH = el("circle", {r: 4, fill: tok("--accent"), stroke: tok("--surface"), "stroke-width": 2, visibility: "hidden"}, s);
+  const hit = el("rect", {x: L, y: T, width: pw, height: ph, fill: "transparent"}, s);
+  hit.addEventListener("mousemove", ev => {
+    const box = s.getBoundingClientRect(), x = (ev.clientX - box.left) * (w / box.width), q = Math.max(1 / n, Math.min(1, (x - L) / pw));
+    const k = Math.max(1, Math.round(n * q)), sh = shareAt(k / n), px = L + pw * k / n, py = T + ph * (1 - sh);
+    guide.setAttribute("x1", px); guide.setAttribute("x2", px); guide.setAttribute("visibility", "visible");
+    dotH.setAttribute("cx", px); dotH.setAttribute("cy", py); dotH.setAttribute("visibility", "visible");
+    showTip(`Top <span class="tn">${nf.format(k)}</span> customers (<span class="tn">${pct(k / n)}</span>)<br>earn <span class="tn">${pct(sh)}</span> of revenue`, ev);
+  });
+  hit.addEventListener("mouseleave", () => { guide.setAttribute("visibility", "hidden"); dotH.setAttribute("visibility", "hidden"); hideTip(); });
+  document.getElementById("paretoNote").textContent = `The top 1% of customers (${nf.format(Math.max(1, Math.round(n * .01)))}) earn ${pct(s1)} of this group's revenue; the top 20% earn ${pct(s20)}.`;
+}
+
+/* ---------- cohort ---------- */
+function renderCohort(F) {
+  const n = MONTHS.length, size = Array(n).fill(0), active = Array.from({length: n}, () => Array(n).fill(0));
+  F.forEach(c => { size[c.first]++; c.hist.forEach(h => active[c.first][h.m - c.first]++); });
+  let max = 0;
+  for (let i = 0; i < n; i++) for (let k = 1; k < n - i; k++) if (size[i]) max = Math.max(max, active[i][k] / size[i]);
+  max = Math.max(max, .05);
+  const t = document.getElementById("cohort");
+  let html = `<thead><tr><th class="rowh">Cohort</th><th>Size</th>${MONTHS.map((_, k) => `<th>M${k}</th>`).join("")}</tr></thead><tbody>`;
+  for (let i = 0; i < n; i++) {
+    html += `<tr><th class="rowh">${monthLabel(MONTHS[i])}</th><td class="size">${nf.format(size[i])}</td>`;
+    for (let k = 0; k < n; k++) {
+      if (k >= n - i || !size[i]) { html += `<td class="blank"></td>`; continue; }
+      const v = active[i][k] / size[i];
+      if (k === 0) { html += `<td style="background:var(--surface-2);color:var(--muted)" data-i="${i}" data-k="${k}">100</td>`; continue; }
+      const bg = seq(v / max);
+      html += `<td style="background:${bg};color:${inkOn(bg)}" data-i="${i}" data-k="${k}">${Math.round(v * 100)}</td>`;
+    }
+    html += "</tr>";
+  }
+  t.innerHTML = html + "</tbody>";
+  t.onmousemove = ev => {
+    const td = ev.target.closest("td[data-i]");
+    if (!td) return hideTip();
+    const i = +td.dataset.i, k = +td.dataset.k;
+    showTip(`<b>${monthLabel(MONTHS[i], true)} cohort</b> · month ${k}<br><span class="tn">${nf.format(active[i][k])}</span> of <span class="tn">${nf.format(size[i])}</span> bought in ${monthLabel(MONTHS[i + k], true)} (<span class="tn">${pct(active[i][k] / size[i])}</span>)`, ev);
+  };
+  t.onmouseleave = hideTip;
+  document.getElementById("cohortRamp").style.background = `linear-gradient(90deg,${seq(0)},${seq(.33)},${seq(.66)},${seq(1)})`;
+  document.getElementById("cohortMax").textContent = Math.round(max * 100) + "%";
+}
+
+/* ---------- scatter ---------- */
+function renderScatter(base) {
+  const host = document.getElementById("scatter"), h = 300;
+  const [s, w] = newSvg(host, h);
+  const L = 46, R = 10, T = 10, B = 32, pw = w - L - R, ph = h - T - B;
+  if (!base.length) return;
+  const maxRec = Math.max(30, ...base.map(c => c.rec));
+  const lo = Math.floor(Math.log10(Math.max(1, Math.min(...base.map(c => c.mon))))), hi = Math.ceil(Math.log10(Math.max(...base.map(c => c.mon))));
+  const X = v => L + pw * v / maxRec, Y = v => T + ph * (1 - (Math.log10(Math.max(v, 1)) - lo) / Math.max(1, hi - lo));
+  for (let e = lo; e <= hi; e++) {
+    el("line", {x1: L, x2: w - R, y1: Y(10 ** e), y2: Y(10 ** e), stroke: tok("--line")}, s);
+    el("text", {x: L - 6, y: Y(10 ** e) + 3.5, "text-anchor": "end", "font-size": 10, fill: tok("--muted")}, s).textContent = compact(10 ** e, true);
+  }
+  const xs = niceScale(maxRec, 4);
+  for (let v = 0; v <= maxRec; v += xs.step) el("text", {x: X(v), y: h - 14, "text-anchor": "middle", "font-size": 10, fill: tok("--muted")}, s).textContent = v;
+  el("text", {x: L + pw, y: h - 1, "text-anchor": "end", "font-size": 10, fill: tok("--muted")}, s).textContent = "days since last purchase →";
+  const focus = focusActive(), match = c => inSeg(c) && inCell(c);
+  const color = state.seg >= 0 ? segColor(state.seg) : tok("--accent");
+  const g0 = el("g", {}, s), g1 = el("g", {}, s);
+  const jitter = id => ((parseInt(id, 10) * 9301 + 49297) % 233280) / 233280 - .5;
+  const shown = [];
+  base.forEach(c => {
+    const on = !focus || match(c);
+    const cx = X(c.rec + jitter(c.id) * 1.6), cy = Y(c.mon);
+    el("circle", {cx: cx.toFixed(1), cy: cy.toFixed(1), r: on ? 2.6 : 2, fill: on ? color : tok("--muted-dot"), "fill-opacity": on ? (focus ? .8 : .45) : .6}, on ? g1 : g0);
+    shown.push([cx, cy, c]);
+  });
+  const ring = el("circle", {r: 6, fill: "none", stroke: tok("--ink"), "stroke-width": 1.5, visibility: "hidden"}, s);
+  const hit = el("rect", {x: L, y: T, width: pw, height: ph, fill: "transparent", style: "cursor:pointer"}, s);
+  let near = null;
+  hit.addEventListener("mousemove", ev => {
+    const box = s.getBoundingClientRect(), mx = (ev.clientX - box.left) * (w / box.width), my = (ev.clientY - box.top) * (h / box.height);
+    let best = 144; near = null;
+    for (const p of shown) { const d = (p[0] - mx) ** 2 + (p[1] - my) ** 2; if (d < best) { best = d; near = p; } }
+    if (!near) { ring.setAttribute("visibility", "hidden"); return hideTip(); }
+    ring.setAttribute("cx", near[0]); ring.setAttribute("cy", near[1]); ring.setAttribute("visibility", "visible");
+    const c = near[2];
+    showTip(`<b>Customer ${esc(c.id)}</b> · ${esc(c.country)}<br>${SEG[c.seg]}<br>Last bought <span class="tn">${c.rec}</span> days ago · <span class="tn">${c.freq}</span> orders<br>Spend <span class="tn">${gbp.format(c.mon)}</span>`, ev);
+  });
+  hit.addEventListener("mouseleave", () => { ring.setAttribute("visibility", "hidden"); hideTip(); near = null; });
+  hit.addEventListener("click", () => near && openDrawer(near[2]));
+  const lbl = state.cell ? `cell R${state.cell[0]} · F${state.cell[1]}` : state.seg >= 0 ? SEG[state.seg] : "";
+  document.getElementById("scatterSub").textContent = focus
+    ? `Each dot is a customer; ${lbl} is highlighted against the rest. Select a dot to open the profile.`
+    : "Each dot is a customer. Country filter applies; choosing a segment or grid cell highlights it. Select a dot to open the profile.";
+}
+
+/* ---------- histograms ---------- */
+function binned(F, bins, get) { const out = bins.map(() => 0); F.forEach(c => { const v = get(c); const i = bins.findIndex(b => v >= b[0] && v < b[1]); if (i >= 0) out[i]++; }); return out; }
+function renderHists(F) {
+  const color = state.seg >= 0 ? segColor(state.seg) : tok("--accent");
+  const sets = [
+    ["hRec", [[0, 30], [30, 60], [60, 90], [90, 120], [120, 180], [180, 240], [240, 300], [300, 1e9]], ["<30", "30–59", "60–89", "90–119", "120–179", "180–239", "240–299", "300+"], c => c.rec, "days"],
+    ["hFreq", [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 11], [11, 21], [21, 1e9]], ["1", "2", "3", "4", "5", "6–10", "11–20", "21+"], c => c.freq, "orders"],
+    ["hMon", [[0, 100], [100, 250], [250, 500], [500, 1000], [1000, 2500], [2500, 5000], [5000, 10000], [10000, 1e12]], ["<100", "100", "250", "500", "1k", "2.5k", "5k", "10k+"], c => c.mon, "£"],
+  ];
+  const monTips = ["under £100", "£100–249", "£250–499", "£500–999", "£1,000–2,499", "£2,500–4,999", "£5,000–9,999", "£10,000 or more"];
+  sets.forEach(([id, bins, labels, get, unit]) => {
+    const vals = binned(F, bins, get);
+    vbars(document.getElementById(id), {labels, values: vals, color, height: 170, labelEvery: 1, yFmt: v => compact(v),
+      tipFn: i => `<b>${id === "hMon" ? monTips[i] : labels[i] + " " + unit}</b><br><span class="tn">${nf.format(vals[i])}</span> customers (<span class="tn">${pct(vals[i] / Math.max(1, F.length))}</span>)`});
+  });
+}
+
+/* ---------- countries & products ---------- */
+function hlist(host, items, fmt) {
+  host.replaceChildren();
+  if (!items.length) { host.innerHTML = `<div class="empty-state">Nothing to show for these filters.</div>`; return; }
+  const max = Math.max(...items.map(i => i.value));
+  items.forEach(it => {
+    const row = document.createElement(it.onClick ? "button" : "div");
+    if (it.onClick) { row.type = "button"; row.addEventListener("click", it.onClick); row.setAttribute("aria-pressed", !!it.on); }
+    row.className = "hrow" + (it.on ? " on" : "");
+    row.innerHTML = `<span class="lab" title="${esc(it.label)}">${esc(it.label)}</span><span class="track"><span class="fill" style="display:block;width:${it.value / max * 100}%;background:${it.color}"></span></span><span class="val">${fmt(it.value)}<small>${it.sub}</small></span>`;
+    if (it.tip) { row.addEventListener("mousemove", ev => showTip(it.tip, ev)); row.addEventListener("mouseleave", hideTip); }
+    host.appendChild(row);
+  });
+}
+function renderCountries(base) {
+  const by = new Map();
+  base.forEach(c => { const o = by.get(c.country) || {rev: 0, n: 0}; o.rev += c.mon; o.n++; by.set(c.country, o); });
+  const tot = base.reduce((s, c) => s + c.mon, 0);
+  let rows = [...by].map(([k, v]) => ({k, ...v})).sort((a, b) => b.rev - a.rev);
+  if (state.hideUK) rows = rows.filter(r => r.k !== "United Kingdom");
+  const top = rows.slice(0, 12);
+  if (state.country && !top.some(r => r.k === state.country)) { const sel = rows.find(r => r.k === state.country); if (sel) top.push(sel); }
+  const color = state.seg >= 0 ? segColor(state.seg) : tok("--accent");
+  hlist(document.getElementById("countries"), top.map(r => ({
+    label: r.k, value: r.rev, sub: nf.format(r.n) + " cust.", on: state.country === r.k,
+    color: state.country && state.country !== r.k ? tok("--muted-dot") : color,
+    onClick: () => { state.country = state.country === r.k ? "" : r.k; state.page = 0; syncControls(); renderAll(); },
+    tip: `<b>${esc(r.k)}</b><br>Revenue <span class="tn">${gbp.format(r.rev)}</span> (<span class="tn">${pct(r.rev / tot)}</span>)<br>Customers <span class="tn">${nf.format(r.n)}</span><br>Per customer <span class="tn">${gbp.format(r.rev / r.n)}</span>`,
+  })), v => compact(v, true));
+}
+function renderProducts() {
+  const key = state.seg >= 0 ? SEG[state.seg] : "", list = D.products[key] || [];
+  const color = state.seg >= 0 ? segColor(state.seg) : tok("--accent");
+  document.getElementById("prodSub").textContent = (state.seg >= 0 ? `Bought by ${SEG[state.seg]}` : "All customers") + ", ranked by revenue. Only the segment filter applies.";
+  hlist(document.getElementById("products"), list.map(([name, rev, units, cust]) => ({
+    label: name.charAt(0) + name.slice(1).toLowerCase(), value: rev, sub: nf.format(cust) + " cust.", color,
+    tip: `<b>${esc(name)}</b><br>Revenue <span class="tn">${gbp.format(rev)}</span><br>Units <span class="tn">${nf.format(units)}</span> · Customers <span class="tn">${nf.format(cust)}</span>`,
+  })), v => compact(v, true));
+}
+
+/* ---------- playbook ---------- */
+function renderPlays(base) {
+  const host = document.getElementById("plays"), rev = base.reduce((s, c) => s + c.mon, 0);
+  host.replaceChildren();
+  D.segments.forEach((sg, i) => {
+    const g = base.filter(c => c.seg === i), r = g.reduce((s, c) => s + c.mon, 0);
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "play" + (state.seg === i ? " on" : ""); b.setAttribute("aria-pressed", state.seg === i);
+    b.innerHTML = `<span class="pt"><span class="dot" style="background:${segColor(i)}"></span>${sg.name}</span><span class="pm"><span>${nf.format(g.length)} cust.</span><span>${pct(rev ? r / rev : 0)} of revenue</span></span><p>${esc(sg.action)}</p>`;
+    b.addEventListener("click", () => setSeg(state.seg === i ? -1 : i));
+    host.appendChild(b);
+  });
+}
+
+/* ---------- customer table ---------- */
+const COLS = [
+  {k: "id", t: "Customer"}, {k: "country", t: "Country"}, {k: "seg", t: "Segment"}, {k: "last", t: "Last purchase"},
+  {k: "rec", t: "Recency", r: 1}, {k: "freq", t: "Orders", r: 1}, {k: "mon", t: "Revenue", r: 1}, {k: "aov", t: "Avg order", r: 1},
+  {k: "rfm", t: "R · F · M", r: 1, nosort: 1}, {k: "score", t: "RFM score", r: 1},
+];
+let tableRows = [];
+function renderTable(F) {
+  const q = state.search.trim().toLowerCase();
+  const rows = q ? F.filter(c => c.id.toLowerCase().includes(q)) : F.slice();
+  const {key, dir} = state.sort;
+  rows.sort((a, b) => { const x = a[key], y = b[key]; return (typeof x === "string" ? x.localeCompare(y, undefined, {numeric: true}) : x - y) * dir; });
+  tableRows = rows;
+  const pages = Math.max(1, Math.ceil(rows.length / PAGE));
+  state.page = Math.min(state.page, pages - 1);
+  const head = document.getElementById("thead");
+  head.innerHTML = COLS.map(c => {
+    const sorted = key === c.k, aria = sorted ? ` aria-sort="${dir > 0 ? "ascending" : "descending"}"` : "";
+    return `<th class="${c.r ? "r" : ""}"${aria}>${c.nosort ? `<button type="button" disabled style="cursor:default">${c.t}</button>` : `<button type="button" data-k="${c.k}">${c.t}${sorted ? (dir > 0 ? " ↑" : " ↓") : ""}</button>`}</th>`;
+  }).join("");
+  const body = document.getElementById("tbody");
+  body.innerHTML = rows.slice(state.page * PAGE, state.page * PAGE + PAGE).map((c, i) => `<tr data-row="${state.page * PAGE + i}" tabindex="0">
+    <td class="num">${esc(c.id)}</td><td>${esc(c.country)}</td>
+    <td><span class="pill"><span class="dot" style="background:${segColor(c.seg)}"></span>${SEG[c.seg]}</span></td>
+    <td class="num">${c.last}</td><td class="r num">${nf.format(c.rec)}d</td><td class="r num">${nf.format(c.freq)}</td>
+    <td class="r num">${gbp2.format(c.mon)}</td><td class="r num">${gbp2.format(c.aov)}</td>
+    <td class="r"><span class="pips">${c.r}·${c.f}·${c.m}</span></td>
+    <td class="r"><span class="scorebar"><span class="b"><i style="width:${c.score}%"></i></span><span class="num">${c.score.toFixed(1)}</span></span></td></tr>`).join("");
+  document.getElementById("tEmpty").hidden = rows.length > 0;
+  document.getElementById("pageInfo").textContent = rows.length
+    ? `${nf.format(state.page * PAGE + 1)}–${nf.format(Math.min(rows.length, (state.page + 1) * PAGE))} of ${nf.format(rows.length)} customers`
+    : "0 customers";
+  document.getElementById("prev").disabled = state.page === 0;
+  document.getElementById("next").disabled = state.page >= pages - 1;
+}
+function toCsv(rows) {
+  const head = ["CustomerID", "Country", "Segment", "LastPurchaseDate", "RecencyDays", "Frequency", "Monetary", "AvgOrderValue", "R_Score", "F_Score", "M_Score", "RFM_Score"];
+  const q = v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
+  return [head.join(","), ...rows.map(c => [c.id, c.country, SEG[c.seg], c.last, c.rec, c.freq, c.mon.toFixed(2), c.aov.toFixed(2), c.r, c.f, c.m, c.score].map(q).join(","))].join("\n");
+}
+
+/* ---------- drawer ---------- */
+let lastFocus = null;
+function openDrawer(c) {
+  lastFocus = document.activeElement;
+  const dr = document.getElementById("drawer"), sg = D.segments[c.seg];
+  const rank = (key, v) => C.filter(x => x[key] < v).length / C.length;
+  const meter = (label, score, detail) => `<div class="meter"><span>${label}</span><span class="pp">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= score ? "on" : ""}"></i>`).join("")}</span><span class="num" style="text-align:right">${detail}</span></div>`;
+  dr.innerHTML = `<div class="top"><div><div class="eyebrow">Customer profile</div><h2 id="dTitle" class="num">${esc(c.id)}</h2>
+      <span class="pill"><span class="dot" style="background:${segColor(c.seg)}"></span>${sg.name}</span> <span style="color:var(--muted);font-size:12px">${esc(c.country)}</span></div>
+      <button type="button" class="btn" id="dClose">Close</button></div>
+    <div class="dscore"><b>${c.score.toFixed(1)}</b><span style="color:var(--muted)">/ 100 RFM score</span></div>
+    <div class="meters">${meter("Recency", c.r, c.rec + " days")}${meter("Frequency", c.f, c.freq + " orders")}${meter("Monetary", c.m, compact(c.mon, true))}</div>
+    <dl class="facts">
+      <div><dt>Last purchase</dt><dd>${dateLabel(c.last)}</dd></div>
+      <div><dt>Lifetime revenue</dt><dd>${gbp2.format(c.mon)}</dd></div>
+      <div><dt>Avg order value</dt><dd>${gbp2.format(c.aov)}</dd></div>
+      <div><dt>Spend percentile</dt><dd>${pct(rank("mon", c.mon), 0)}</dd></div>
+      <div><dt>Units bought</dt><dd>${nf.format(c.units)}</dd></div>
+      <div><dt>Distinct products</dt><dd>${nf.format(c.prods)}</dd></div>
+    </dl>
+    <div><div class="eyebrow" style="margin-bottom:4px">Monthly spend</div><div id="dHist"></div></div>
+    <div class="callout"><b>Suggested action.</b> ${esc(sg.action)}</div>`;
+  dr.hidden = false; document.getElementById("scrim").hidden = false;
+  const byM = Array(MONTHS.length).fill(0), ordM = Array(MONTHS.length).fill(0);
+  c.hist.forEach(h => { byM[h.m] = h.rev; ordM[h.m] = h.orders; });
+  vbars(document.getElementById("dHist"), {labels: MONTHS.map(m => monthLabel(m)), values: byM, color: segColor(c.seg), height: 160,
+    partial: D.lastMonthPartial ? MONTHS.length - 1 : -1, yFmt: v => compact(v, true),
+    tipFn: i => `<b>${monthLabel(MONTHS[i], true)}</b><br><span class="tn">${gbp2.format(byM[i])}</span> · <span class="tn">${ordM[i]}</span> orders`});
+  document.getElementById("dClose").addEventListener("click", closeDrawer);
+  document.getElementById("dClose").focus();
+}
+function closeDrawer() {
+  document.getElementById("drawer").hidden = true; document.getElementById("scrim").hidden = true; hideTip();
+  if (lastFocus) lastFocus.focus();
+}
+
+/* ---------- orchestration ---------- */
+function setSeg(i) { state.seg = i; state.page = 0; syncControls(); renderAll(); }
+function syncControls() {
+  document.getElementById("fCountry").value = state.country;
+  document.getElementById("fSegment").value = String(state.seg);
+  const chip = document.getElementById("cellChip");
+  chip.hidden = !state.cell;
+  if (state.cell) document.getElementById("cellChipText").textContent = `Grid cell R${state.cell[0]} · F${state.cell[1]}`;
+  document.getElementById("reset").disabled = !state.country && state.seg < 0 && !state.cell;
+}
+function renderAll() {
+  css = getComputedStyle(document.documentElement);
+  hideTip();
+  syncControls();
+  const base = C.filter(inCountry), F = base.filter(c => inSeg(c) && inCell(c)), countryBase = C.filter(c => inSeg(c) && inCell(c));
+  const parts = [state.country, state.seg >= 0 ? SEG[state.seg] : "", state.cell ? `R${state.cell[0]}·F${state.cell[1]}` : ""].filter(Boolean);
+  document.getElementById("status").innerHTML = `<b>${nf.format(F.length)}</b> of ${nf.format(C.length)} customers${parts.length ? " · " + esc(parts.join(" · ")) : ""}`;
+  renderKpis(F); renderLedger(base); renderGrid(base); renderTrend(F); renderPareto(F);
+  renderCohort(F); renderScatter(base); renderHists(F); renderCountries(countryBase); renderProducts(); renderPlays(base); renderTable(F);
+}
+
+/* ---------- static content + events ---------- */
+document.getElementById("period").textContent = `${dateLabel(D.firstSale)} – ${dateLabel(D.asOf)}`;
+document.getElementById("asofDate").textContent = dateLabel(D.asOf);
+document.getElementById("lede").textContent = `${nf.format(C.length)} customers across ${D.countries.length} countries, scored on how recently, how often and how much they buy, with ${gbp.format(TOTAL_REV)} in cleaned sales.`;
+const A = D.audit;
+document.getElementById("audit").innerHTML = [
+  [A.rows_read, "transaction lines loaded"], [A.duplicate_rows_removed, "exact duplicate lines removed"],
+  [A.missing_customer_rows_removed, "lines without a customer ID excluded"], [A.cancelled_invoice_rows_removed, "cancellation lines excluded"],
+  [A.nonpositive_or_invalid_amount_rows_removed, "lines with zero, negative or invalid quantity or price excluded"],
+  [A.invalid_dates_removed, "lines with unreadable dates excluded"], [A.rows_kept, "valid sales lines used"],
+].map(([n, t]) => `<li><span class="num">${nf.format(n)}</span> ${t}</li>`).join("") + `<li>Exclusion counts overlap; a line can fail more than one check.</li>`;
+
+const fc = document.getElementById("fCountry"), fs = document.getElementById("fSegment");
+D.countries.forEach(c => fc.add(new Option(c, c)));
+SEG.forEach((s, i) => fs.add(new Option(s, i)));
+fc.addEventListener("change", () => { state.country = fc.value; state.page = 0; renderAll(); });
+fs.addEventListener("change", () => setSeg(+fs.value));
+document.getElementById("cellChipClear").addEventListener("click", () => { state.cell = null; renderAll(); });
+document.getElementById("reset").addEventListener("click", () => { Object.assign(state, {country: "", seg: -1, cell: null, page: 0}); renderAll(); });
+document.getElementById("hideUK").addEventListener("change", e => { state.hideUK = e.target.checked; renderCountries(C.filter(c => inSeg(c) && inCell(c))); });
+function toggleGroup(id, key, render) {
+  const g = document.getElementById(id);
+  g.addEventListener("click", e => {
+    const b = e.target.closest("button[data-v]"); if (!b) return;
+    state[key] = b.dataset.v;
+    g.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    render();
+  });
+}
+toggleGroup("trendMetric", "trend", () => { css = getComputedStyle(document.documentElement); renderTrend(C.filter(c => inCountry(c) && inSeg(c) && inCell(c))); });
+toggleGroup("gridMetric", "grid", () => { css = getComputedStyle(document.documentElement); renderGrid(C.filter(inCountry)); });
+document.getElementById("thead").addEventListener("click", e => {
+  const b = e.target.closest("button[data-k]"); if (!b) return;
+  const k = b.dataset.k;
+  state.sort = state.sort.key === k ? {key: k, dir: -state.sort.dir} : {key: k, dir: ["id", "country", "last", "rec"].includes(k) ? 1 : -1};
+  state.page = 0; renderTable(C.filter(c => inCountry(c) && inSeg(c) && inCell(c)));
+});
+const tableF = () => C.filter(c => inCountry(c) && inSeg(c) && inCell(c));
+document.getElementById("tbody").addEventListener("click", e => { const tr = e.target.closest("tr[data-row]"); if (tr) openDrawer(tableRows[+tr.dataset.row]); });
+document.getElementById("tbody").addEventListener("keydown", e => { if (e.key === "Enter") { const tr = e.target.closest("tr[data-row]"); if (tr) openDrawer(tableRows[+tr.dataset.row]); } });
+document.getElementById("search").addEventListener("input", e => { state.search = e.target.value; state.page = 0; renderTable(tableF()); });
+document.getElementById("prev").addEventListener("click", () => { state.page--; renderTable(tableF()); });
+document.getElementById("next").addEventListener("click", () => { state.page++; renderTable(tableF()); });
+document.getElementById("dl").addEventListener("click", () => {
+  const url = URL.createObjectURL(new Blob([toCsv(tableRows)], {type: "text/csv"}));
+  const a = document.createElement("a"); a.href = url; a.download = "rfm_customers_filtered.csv"; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+document.getElementById("copy").addEventListener("click", async e => {
+  const btn = e.currentTarget;
+  try { await navigator.clipboard.writeText(toCsv(tableRows)); btn.textContent = `Copied ${nf.format(tableRows.length)} rows`; }
+  catch { btn.textContent = "Copy blocked by browser"; }
+  setTimeout(() => { btn.textContent = "Copy CSV"; }, 2200);
+});
+document.getElementById("scrim").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !document.getElementById("drawer").hidden) closeDrawer(); });
+
+let rt;
+const rerender = () => { clearTimeout(rt); rt = setTimeout(renderAll, 120); };
+window.addEventListener("resize", rerender);
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", rerender);
+new MutationObserver(rerender).observe(document.documentElement, {attributes: true, attributeFilter: ["data-theme"]});
+renderAll();
+})();
+</script>
+</body>
+</html>
