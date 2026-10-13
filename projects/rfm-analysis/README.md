@@ -6,6 +6,8 @@ results in a standalone interactive dashboard.
 
 ## Dashboard
 
+**[Open the live interactive dashboard](https://monzoty.github.io/mjr-projects/projects/rfm-analysis/dashboard/)** — visitors can explore it in their browser without installing or running the project.
+
 The dashboard includes customer and revenue KPIs, an actionable segment
 overview, a 5×5 recency/frequency matrix, monthly activity, revenue
 concentration, cohort retention, customer distributions, country and product
@@ -14,18 +16,26 @@ Country, segment, and score-cell selections interactively filter the views.
 
 ## Data and privacy
 
-The analysis expects the column schema from the
-[UCI Online Retail dataset](https://archive.ics.uci.edu/dataset/352/online+retail).
-Download its Excel workbook or prepare a CSV with the same column names:
+The analysis and live preview use the
+[UCI Online Retail dataset](https://archive.ics.uci.edu/dataset/352/online+retail)
+(Daqing Chen, DOI: [10.24432/C5BW33](https://doi.org/10.24432/C5BW33)).
+The public preview embeds the derived customer-level results from this dataset
+so its interactive customer profiles and filters work; the raw transaction file
+is not included in this repository. The dataset's customer IDs and purchase
+history are displayed in the preview. If you reuse this project with another
+dataset, do not publish a live dashboard containing customer-level information
+without appropriate authorization.
+
+The analysis expects the column schema below. Download its Excel workbook or
+prepare a CSV with the same column names:
 
 `InvoiceNo, StockCode, Description, Quantity, InvoiceDate, UnitPrice, CustomerID, Country`
 
 Place the file in the project root as `data.csv` or pass its path with `--data`.
-The raw dataset and generated customer-level results are deliberately excluded
-from Git: transaction files are large, and the outputs contain customer IDs
-and purchase behaviour. Check the dataset's current terms before using or
-redistributing it. Do not publish the raw data or generated output files unless
-you have confirmed you are allowed to share them.
+The raw dataset and generated analysis output are excluded from the source
+project's normal Git workflow: transaction files are large, and outputs contain
+customer IDs and purchase behaviour. Check the dataset's current terms before
+using or redistributing it.
 
 ## Run locally
 

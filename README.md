@@ -39,6 +39,7 @@ interactive standalone dashboard.
 - **Highlights:** Eight actionable customer segments, cross-filtered dashboard,
   cohort retention, revenue concentration, product and country analysis, and
   customer-level export.
+- **Live dashboard:** [View the interactive RFM dashboard](https://monzoty.github.io/mjr-projects/projects/rfm-analysis/dashboard/)
 - **Project files and setup:** [Open the RFM Customer Intelligence project](projects/rfm-analysis/README.md)
 - **Source code:** [`projects/rfm-analysis/`](projects/rfm-analysis/)
 
