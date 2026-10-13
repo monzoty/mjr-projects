@@ -1,0 +1,15 @@
+/venv/
+/.venv/
+/.env
+/.env.*
+!/.env.example
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.idea/
+.vscode/
+
+# Local reference material, not part of the runnable prototype.
+/Building Chatbot Web App.html
+/Building Chatbot Web App_files/

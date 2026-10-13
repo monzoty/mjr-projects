@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#d6a100">
+  <meta name="description" content="Explore NEESH fragrances, note pyramids, bottle sizes and prices with the NEESH scent guide.">
+  <link rel="icon" type="image/png" href="https://neeshperfumes.com/cdn/shop/files/NEESH_LOGO-04_1_1_256x256_8058a898-f1b5-4665-9f98-e88645f2adbf.png?crop=center&amp;height=32&amp;v=1698663036&amp;width=32">
+  <title>Scent Guide — Neesh Perfumes</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap");
+
+    :root {
+      color-scheme: light;
+      --paper: #f7f4ea;
+      --surface: #fffefa;
+      --ink: #29251d;
+      --muted: #817a69;
+      --line: #e9e1cc;
+      --brand-gold: #d6a100;
+      --accent: #a47b00;
+      --accent-dark: #805e00;
+      --accent-soft: #f5ebc9;
+      --shadow: 0 22px 70px rgb(63 50 19 / 9%);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 50% 3%, rgb(214 161 0 / 10%), transparent 35rem),
+        var(--paper);
+      color: var(--ink);
+      font-family: "Jost", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, textarea { font: inherit; }
+    button { color: inherit; }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      width: min(1440px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 22px;
+      gap: 22px;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 44px);
+      padding: 25px 19px 18px;
+      border: 1px solid rgb(233 225 204 / 85%);
+      border-radius: 19px;
+      background: rgb(255 254 250 / 82%);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 2px 4px 29px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 39px;
+      height: 39px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid #ead69a;
+      border-radius: 50%;
+      background: #fffaf0;
+    }
+
+    .brand-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-name {
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 20px;
+      letter-spacing: .1em;
+    }
+
+    .brand-caption {
+      margin-top: 2px;
+      color: var(--accent-dark);
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .new-chat {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 45px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: border-color .2s, background .2s;
+    }
+
+    .new-chat:hover { border-color: #d6a100; background: #fffaf0; }
+    .new-chat .plus { color: var(--accent); font-size: 20px; font-weight: 400; }
+
+    .sidebar-label {
+      margin: 31px 4px 11px;
+      color: #a19c92;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .history-list { display: grid; gap: 5px; }
+
+    .history-item {
+      overflow: hidden;
+      padding: 11px 10px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: #625e56;
+      cursor: pointer;
+      font-size: 12px;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .history-item:hover, .history-item.active {     background: #f7f0dd; color: var(--ink); }
+    .history-empty { padding: 10px 5px; color: #a19c92; font-size: 12px; line-height: 1.6; }
+
+    .sidebar-foot {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: auto;
+      padding: 17px 4px 1px;
+      border-top: 1px solid var(--line);
+    }
+
+    .online-dot, .status-dot {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--brand-gold);
+      box-shadow: 0 0 0 3px rgb(214 161 0 / 16%);
+    }
+
+    .sidebar-foot p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+
+    .main-panel {
+      display: flex;
+      min-width: 0;
+      min-height: calc(100vh - 44px);
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgb(233 225 204 / 85%);
+      border-radius: 19px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: flex;
+      min-height: 74px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 34px;
+      border-bottom: 1px solid #f0ede7;
+    }
+
+    .topbar-title { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+
+    .availability {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .chat-area {
+      display: flex;
+      width: min(760px, 100%);
+      flex: 1;
+      flex-direction: column;
+      align-self: center;
+      padding: 0 30px;
+    }
+
+    .messages {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 21px;
+      overflow-y: auto;
+      padding: 45px 0 24px;
+      scroll-behavior: smooth;
+    }
+
+    .welcome {
+      margin: auto 0;
+      padding: 30px 0 22px;
+      text-align: center;
+    }
+
+    .welcome-emblem {
+      display: grid;
+      width: 55px;
+      height: 55px;
+      margin: 0 auto 21px;
+      place-items: center;
+      border: 1px solid #ead69a;
+      border-radius: 50%;
+      background: #fffaf0;
+      color: var(--accent);
+      font-size: 23px;
+    }
+
+    .eyebrow {
+      margin: 0 0 11px;
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .19em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: clamp(34px, 4vw, 48px);
+      font-weight: 500;
+      letter-spacing: -.035em;
+      line-height: 1.12;
+    }
+
+    .welcome-copy {
+      max-width: 435px;
+      margin: 13px auto 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.75;
+    }
+
+    .prompt-label {
+      margin: 28px 0 11px;
+      color: #9a958c;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .suggestion {
+      padding: 10px 13px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      background: #fffefa;
+      color: #5e5a53;
+      cursor: pointer;
+      font-size: 11px;
+      transition: border-color .2s, color .2s, background .2s;
+    }
+
+    .suggestion:hover { border-color: #d6a100; background: #fff9e8; color: var(--accent-dark); }
+
+    .message-row { display: flex; align-items: flex-start; gap: 10px; }
+    .message-row.user { justify-content: flex-end; }
+
+    .assistant-avatar {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid #ead69a;
+      border-radius: 50%;
+      background: #fffaf0;
+      color: var(--accent);
+      font-family: "Playfair Display", serif;
+      font-size: 14px;
+    }
+
+    .message-content { max-width: min(84%, 590px); }
+
+    .message-bubble {
+      padding: 13px 16px;
+      border: 1px solid #eee9dc;
+      border-radius: 3px 15px 15px;
+      background: #fbfaf6;
+      color: #403d37;
+      font-size: 13px;
+      line-height: 1.75;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .user .message-bubble {
+      border-color: #b98900;
+      border-radius: 15px 3px 15px 15px;
+      background: #f2e4b7;
+      color: #30270e;
+    }
+
+    .message-meta {
+      margin: 6px 3px 0;
+      color: #a19c92;
+      font-size: 10px;
+    }
+
+    .user .message-meta { text-align: right; }
+
+    .typing-bubble {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 43px;
+    }
+
+    .typing-bubble span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--brand-gold);
+      animation: pulse 1s infinite ease-in-out;
+    }
+
+    .typing-bubble span:nth-child(2) { animation-delay: .15s; }
+    .typing-bubble span:nth-child(3) { animation-delay: .3s; }
+
+    @keyframes pulse { 0%, 60%, 100% { opacity: .35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+
+    .composer-wrap { padding: 0 0 19px; }
+
+    .composer {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      padding: 10px 10px 10px 17px;
+      border: 1px solid #e6dfca;
+      border-radius: 15px;
+      background: #fff;
+      box-shadow: 0 5px 20px rgb(51 43 35 / 4%);
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .composer:focus-within {
+      border-color: #c69a12;
+      box-shadow: 0 0 0 3px rgb(214 161 0 / 13%);
+    }
+
+    .composer textarea {
+      width: 100%;
+      min-height: 27px;
+      max-height: 140px;
+      resize: none;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .composer textarea::placeholder { color: #aaa59b; }
+
+    .send-button {
+      display: grid;
+      width: 37px;
+      height: 37px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 0;
+      border-radius: 11px;
+      background: var(--brand-gold);
+      color: #272113;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+
+    .send-button:hover:not(:disabled) { transform: translateY(-1px); background: #e2ae0b; }
+    .send-button:disabled { cursor: not-allowed; opacity: .55; }
+    .send-button svg { width: 17px; height: 17px; }
+
+    .composer-hint { margin: 9px 0 0; color: #aaa59b; font-size: 10px; text-align: center; }
+    .mobile-brand { display: none; }
+
+    .access-gate[hidden] { display: none; }
+
+    .access-gate {
+      position: fixed;
+      z-index: 10;
+      display: grid;
+      min-height: 100vh;
+      min-height: 100dvh;
+      inset: 0;
+      place-items: center;
+      padding: 20px;
+      background: rgb(41 37 29 / 42%);
+      backdrop-filter: blur(5px);
+    }
+
+    .access-card {
+      width: min(420px, 100%);
+      padding: 31px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .access-brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 25px;
+    }
+
+    .access-brand .brand-mark { width: 38px; height: 38px; }
+    .access-card h2 { margin: 0; font: 500 27px/1.2 "Playfair Display", Georgia, serif; }
+    .access-copy { margin: 10px 0 20px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .access-label { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 600; }
+
+    .access-input {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      outline: none;
+      background: #fff;
+      font-size: 14px;
+    }
+
+    .access-input:focus { border-color: var(--brand-gold); box-shadow: 0 0 0 3px rgb(214 161 0 / 13%); }
+
+    .access-submit {
+      width: 100%;
+      min-height: 44px;
+      margin-top: 12px;
+      border: 0;
+      border-radius: 9px;
+      background: var(--brand-gold);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .access-submit:disabled { cursor: wait; opacity: .65; }
+    .access-error { min-height: 18px; margin: 9px 0 0; color: #9b3029; font-size: 12px; }
+
+    @media (max-width: 760px) {
+      .app-shell { display: block; min-height: 100dvh; padding: 0; }
+      .sidebar { display: none; }
+      .main-panel { min-height: 100dvh; border: 0; border-radius: 0; box-shadow: none; }
+      .topbar { min-height: 63px; padding: 0 19px; }
+      .mobile-brand { display: flex; align-items: center; gap: 9px; }
+      .mobile-brand .brand-mark { width: 33px; height: 33px; }
+      .mobile-brand .brand-name { font-size: 17px; }
+      .availability { font-size: 10px; }
+      .topbar-title { display: none; }
+      .chat-area { padding: 0 17px; }
+      .messages { padding-top: 25px; }
+      .welcome { padding: 20px 0; }
+      .welcome-copy { max-width: 340px; font-size: 12px; }
+      .suggestion { padding: 9px 11px; font-size: 10px; }
+      .composer-wrap { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+      .composer-hint { font-size: 9px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body>
+  <section class="access-gate" id="access-gate" aria-labelledby="access-title" aria-modal="true" role="dialog" hidden>
+    <form class="access-card" id="access-form">
+      <div class="access-brand">
+        <div class="brand-mark" aria-hidden="true">
+          <img class="brand-logo" src="https://neeshperfumes.com/cdn/shop/files/NEESH_LOGO-04_1_1_256x256_8058a898-f1b5-4665-9f98-e88645f2adbf.png?crop=center&amp;height=64&amp;v=1698663036&amp;width=64" alt="">
+        </div>
+        <div class="brand-name">NEESH™</div>
+      </div>
+      <h2 id="access-title">Welcome to the scent guide</h2>
+      <p class="access-copy">This private prototype is protected by an access code. Enter the code shared by the person hosting the demo.</p>
+      <label class="access-label" for="access-code">Demo access code</label>
+      <input class="access-input" id="access-code" type="password" autocomplete="current-password" required>
+      <button class="access-submit" id="access-submit" type="submit">Continue</button>
+      <p class="access-error" id="access-error" role="alert" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Conversation sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <img class="brand-logo" src="https://neeshperfumes.com/cdn/shop/files/NEESH_LOGO-04_1_1_256x256_8058a898-f1b5-4665-9f98-e88645f2adbf.png?crop=center&amp;height=64&amp;v=1698663036&amp;width=64" alt="">
+        </div>
+        <div>
+          <div class="brand-name">NEESH™</div>
+          <div class="brand-caption">Haute perfumery</div>
+        </div>
+      </div>
+
+      <button class="new-chat" id="new-chat" type="button">
+        <span class="plus" aria-hidden="true">+</span>
+        <span>Start a new conversation</span>
+      </button>
+
+      <div class="sidebar-label">Recent conversations</div>
+      <nav class="history-list" id="history-list" aria-label="Recent conversations"></nav>
+
+      <div class="sidebar-foot">
+        <span class="online-dot" aria-hidden="true"></span>
+        <p>Explore the house of NEESH<br>Grounded in official store details</p>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="mobile-brand">
+          <div class="brand-mark" aria-hidden="true">
+            <img class="brand-logo" src="https://neeshperfumes.com/cdn/shop/files/NEESH_LOGO-04_1_1_256x256_8058a898-f1b5-4665-9f98-e88645f2adbf.png?crop=center&amp;height=64&amp;v=1698663036&amp;width=64" alt="">
+          </div>
+          <div class="brand-name">NEESH™</div>
+        </div>
+        <p class="topbar-title">NEESH fragrance &amp; brand guide</p>
+        <div class="availability"><span class="status-dot" aria-hidden="true"></span> Official brand and store information</div>
+      </header>
+
+      <section class="chat-area" aria-label="Fragrance consultation">
+        <div class="messages" id="messages" aria-live="polite" aria-relevant="additions text"></div>
+
+        <div class="composer-wrap">
+          <form class="composer" id="composer">
+            <textarea id="message-input" rows="1" maxlength="2000" aria-label="Your message" placeholder="Ask about a fragrance, its notes, sizes or prices..."></textarea>
+            <button class="send-button" id="send-button" type="submit" aria-label="Send message">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </button>
+          </form>
+          <p class="composer-hint">Fragrance notes, prices and availability are from our latest catalog snapshot · Enter to send</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = "neesh-brand-guide-conversations-v2";
+      const messagesElement = document.getElementById("messages");
+      const input = document.getElementById("message-input");
+      const form = document.getElementById("composer");
+      const sendButton = document.getElementById("send-button");
+      const historyList = document.getElementById("history-list");
+      const accessGate = document.getElementById("access-gate");
+      const accessForm = document.getElementById("access-form");
+      const accessCode = document.getElementById("access-code");
+      const accessSubmit = document.getElementById("access-submit");
+      const accessError = document.getElementById("access-error");
+      const suggestions = [
+        "Show me every NEESH perfume",
+        "What are the notes and prices of Mehr?",
+        "Recommend a fresh daytime fragrance",
+        "How do shipping and returns work?"
+      ];
+
+      let conversations = loadConversations();
+      let activeId = conversations[0]?.id || createConversation();
+      let sending = false;
+
+      function loadConversations() {
+        try {
+          const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          return Array.isArray(stored)
+            ? stored.filter(item => item && typeof item.id === "string" && Array.isArray(item.messages))
+            : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function persistConversations() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations.slice(0, 12)));
+        } catch {
+          // Chat remains usable when local storage is unavailable or full.
+        }
+      }
+
+      function createConversation() {
+        const conversation = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, messages: [], updatedAt: Date.now() };
+        conversations.unshift(conversation);
+        return conversation.id;
+      }
+
+      function activeConversation() {
+        return conversations.find(item => item.id === activeId);
+      }
+
+      function renderWelcome() {
+        const welcome = document.createElement("section");
+        welcome.className = "welcome";
+
+        const emblem = document.createElement("div");
+        emblem.className = "welcome-emblem";
+        emblem.setAttribute("aria-hidden", "true");
+        const emblemLogo = document.createElement("img");
+        emblemLogo.className = "brand-logo";
+        emblemLogo.src = "https://neeshperfumes.com/cdn/shop/files/NEESH_LOGO-04_1_1_256x256_8058a898-f1b5-4665-9f98-e88645f2adbf.png?crop=center&height=64&v=1698663036&width=64";
+        emblemLogo.alt = "";
+        emblem.appendChild(emblemLogo);
+
+        const eyebrow = document.createElement("p");
+        eyebrow.className = "eyebrow";
+        eyebrow.textContent = "A more personal kind of discovery";
+
+        const title = document.createElement("h1");
+        title.textContent = "Discover your NEESH fragrance.";
+
+        const copy = document.createElement("p");
+        copy.className = "welcome-copy";
+        copy.textContent = "Ask about any fragrance—explore its notes, scent character, best-for occasions, sizes and prices.";
+
+        const promptLabel = document.createElement("p");
+        promptLabel.className = "prompt-label";
+        promptLabel.textContent = "Not sure where to start? Try one of these";
+
+        const suggestionList = document.createElement("div");
+        suggestionList.className = "suggestions";
+        suggestions.forEach(text => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "suggestion";
+          button.textContent = text;
+          button.addEventListener("click", () => sendMessage(text));
+          suggestionList.appendChild(button);
+        });
+
+        welcome.append(emblem, eyebrow, title, copy, promptLabel, suggestionList);
+        messagesElement.appendChild(welcome);
+      }
+
+      function renderMessage(message) {
+        const row = document.createElement("div");
+        row.className = `message-row ${message.role === "user" ? "user" : "assistant"}`;
+
+        if (message.role !== "user") {
+          const avatar = document.createElement("div");
+          avatar.className = "assistant-avatar";
+          avatar.setAttribute("aria-hidden", "true");
+          avatar.textContent = "N";
+          row.appendChild(avatar);
+        }
+
+        const content = document.createElement("div");
+        content.className = "message-content";
+        const bubble = document.createElement("div");
+        bubble.className = "message-bubble";
+        bubble.textContent = formatMessage(message);
+        content.appendChild(bubble);
+
+        const meta = document.createElement("p");
+        meta.className = "message-meta";
+        meta.textContent = message.role === "user" ? "You" : "Neesh Scent Guide";
+        content.appendChild(meta);
+        row.appendChild(content);
+        messagesElement.appendChild(row);
+      }
+
+      function formatMessage(message) {
+        if (message.role === "user") return message.content;
+
+        return message.content
+          .replace(/\*\*(.*?)\*\*/g, "$1")
+          .replace(/__(.*?)__/g, "$1")
+          .replace(/^#{1,6}\s*/gm, "")
+          .replace(/`([^`]+)`/g, "$1")
+          .split("\n")
+          .map(line => {
+            const trimmed = line.trim();
+            if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+              const cells = trimmed.slice(1, -1).split("|").map(cell => cell.trim());
+              if (cells.every(cell => /^:?-{3,}:?$/.test(cell))) return "";
+              return cells.join(" — ");
+            }
+            return line.replace(/^\s*[-*]\s+/, "• ");
+          })
+          .join("\n");
+      }
+
+      function renderConversation() {
+        messagesElement.replaceChildren();
+        const conversation = activeConversation();
+        if (!conversation || conversation.messages.length === 0) {
+          renderWelcome();
+          return;
+        }
+        conversation.messages.forEach(renderMessage);
+        messagesElement.scrollTop = messagesElement.scrollHeight;
+      }
+
+      function renderHistory() {
+        historyList.replaceChildren();
+        const recent = conversations.filter(item => item.messages.length > 0).slice(0, 8);
+        if (recent.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "history-empty";
+          empty.textContent = "Your conversations will appear here.";
+          historyList.appendChild(empty);
+          return;
+        }
+        recent.forEach(conversation => {
+          const firstMessage = conversation.messages.find(message => message.role === "user");
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = `history-item${conversation.id === activeId ? " active" : ""}`;
+          button.textContent = firstMessage ? firstMessage.content : "Fragrance consultation";
+          button.title = button.textContent;
+          button.addEventListener("click", () => {
+            activeId = conversation.id;
+            renderConversation();
+            renderHistory();
+          });
+          historyList.appendChild(button);
+        });
+      }
+
+      function setSending(value) {
+        sending = value;
+        sendButton.disabled = value;
+        input.disabled = value;
+        sendButton.setAttribute("aria-label", value ? "Sending message" : "Send message");
+      }
+
+      async function sendMessage(rawText) {
+        if (sending) return;
+        const text = (rawText ?? input.value).trim();
+        if (!text) return;
+
+        const conversation = activeConversation();
+        if (!conversation) return;
+        conversation.messages.push({ role: "user", content: text });
+        conversation.updatedAt = Date.now();
+        input.value = "";
+        input.style.height = "auto";
+        renderConversation();
+        renderHistory();
+        persistConversations();
+
+        const typingRow = document.createElement("div");
+        typingRow.className = "message-row assistant";
+        typingRow.setAttribute("aria-label", "Neesh is thinking");
+        const avatar = document.createElement("div");
+        avatar.className = "assistant-avatar";
+        avatar.setAttribute("aria-hidden", "true");
+        avatar.textContent = "N";
+        const typingBubble = document.createElement("div");
+        typingBubble.className = "message-bubble typing-bubble";
+        typingBubble.setAttribute("aria-hidden", "true");
+        for (let i = 0; i < 3; i += 1) typingBubble.appendChild(document.createElement("span"));
+        typingRow.append(avatar, typingBubble);
+        messagesElement.appendChild(typingRow);
+        messagesElement.scrollTop = messagesElement.scrollHeight;
+        setSending(true);
+
+        try {
+          const response = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: conversation.messages.slice(-40) })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(typeof data.error === "string" ? data.error : "The fragrance guide couldn't reply right now.");
+          }
+          if (typeof data.reply !== "string" || !data.reply.trim()) {
+            throw new Error("The fragrance guide returned an empty reply. Please try again.");
+          }
+          conversation.messages.push({ role: "assistant", content: data.reply });
+          conversation.updatedAt = Date.now();
+          persistConversations();
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Something went wrong. Please try again.";
+          conversation.messages.push({ role: "assistant", content: `I'm sorry, I couldn't complete that just now. ${message}` });
+          persistConversations();
+        } finally {
+          setSending(false);
+          renderConversation();
+          renderHistory();
+          input.focus();
+        }
+      }
+
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+        sendMessage();
+      });
+
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          form.requestSubmit();
+        }
+      });
+
+      input.addEventListener("input", () => {
+        input.style.height = "auto";
+        input.style.height = `${Math.min(input.scrollHeight, 140)}px`;
+      });
+
+      document.getElementById("new-chat").addEventListener("click", () => {
+        activeId = createConversation();
+        persistConversations();
+        renderConversation();
+        renderHistory();
+        input.focus();
+      });
+
+      accessForm.addEventListener("submit", async event => {
+        event.preventDefault();
+        accessError.textContent = "";
+        accessSubmit.disabled = true;
+
+        try {
+          const response = await fetch("/auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ access_code: accessCode.value })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(typeof data.error === "string" ? data.error : "Unable to unlock the demo.");
+          }
+          accessGate.hidden = true;
+          input.focus();
+        } catch (error) {
+          accessError.textContent = error instanceof Error ? error.message : "Unable to unlock the demo.";
+          accessCode.select();
+        } finally {
+          accessSubmit.disabled = false;
+        }
+      });
+
+      async function initializeAccessGate() {
+        try {
+          const response = await fetch("/auth");
+          const data = await response.json();
+          if (!response.ok) throw new Error("Unable to verify demo access.");
+          if (!data.required || data.unlocked) {
+            accessGate.hidden = true;
+            return;
+          }
+          accessGate.hidden = false;
+          accessCode.focus();
+        } catch {
+          accessGate.hidden = false;
+          accessCode.disabled = true;
+          accessSubmit.disabled = true;
+          accessError.textContent = "Unable to connect to the demo. Refresh this page and try again.";
+        }
+      }
+
+      renderConversation();
+      renderHistory();
+      initializeAccessGate();
+    })();
+  </script>
+</body>
+</html>

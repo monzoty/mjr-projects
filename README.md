@@ -43,12 +43,28 @@ interactive standalone dashboard.
 - **Project files and setup:** [Open the RFM Customer Intelligence project](projects/rfm-analysis/README.md)
 - **Source code:** [`projects/rfm-analysis/`](projects/rfm-analysis/)
 
+### NEESH Fragrance Chatbot
+
+A branded conversational prototype that answers questions about NEESH perfumes
+using a structured snapshot of fragrance notes, listed prices, and store
+information. It uses a Flask backend and the Anthropic API; the API key stays
+server-side and is supplied through environment variables.
+
+- **Tools:** Python, Flask, Anthropic API, HTML, CSS, JavaScript
+- **Highlights:** Responsive chat interface, perfume catalog context, and
+  optional access-code protection for a hosted demo.
+- **Project files and setup:** [Open the NEESH Fragrance Chatbot](projects/neesh-scent-guide/README.md)
+- **Source code:** [`projects/neesh-scent-guide/`](projects/neesh-scent-guide/)
+- **Live demo:** Not deployed yet. The project README includes instructions for
+  running it locally and deploying it as a web service.
+
 ## Repository layout
 
 ```text
 projects/
 ├── ndr-resolution/    # NDR Resolution System
-└── rfm-analysis/      # RFM Customer Intelligence
+├── rfm-analysis/      # RFM Customer Intelligence
+└── neesh-scent-guide/ # NEESH Fragrance Chatbot
 ```
 
 More projects can be added under `projects/`, with a short overview and link
