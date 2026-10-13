@@ -1,0 +1,41 @@
+awb,order_id,customer_id,customer_name,contact_number,city,cod_amount,attempt_no,ndr_reason_3pl,received_at,text
+DL7742910083,ORD2600000,CUST910000,Divya Joshi,9457111100,Patna,1299,2,Customer Not Available,2026-08-05 10:14,kl subhh 11 bje ke bad bhejna ghr pe koi ni h abhi
+DL7742910084,ORD2600137,CUST910029,Divya Nair,9116266656,Patna,3199,1,Customer Not Available,2026-08-05 10:22,mai duty pe tha 8 bje ke bad hi aana
+DL7742910085,ORD2600274,CUST910058,Shreya Yadav,9540288822,Delhi,1750,3,Customer Not Available,2026-08-05 10:31,sorry bahar gya tha 10 min ke liye
+EK5518203391,ORD2600411,CUST910087,Kavita Gupta,9913939801,Jaipur,0,3,Customer Not Available,2026-08-05 10:47,mai ghar pe hi tha koi nahi aaya jhoot bol rahe ho
+EK5518203392,ORD2600548,CUST910116,Shreya Nair,9226692604,Mumbai,3199,3,Customer Refused,2026-08-05 11:02,poora din wait kiya koi nhi aaya complaint krni h
+EK5518203393,ORD2600685,CUST910145,Karan Gupta,9244521862,Pune,0,2,Customer Not Available,2026-08-05 11:15,aapke bnde ne bina aaye hi failed mark kr dia
+BD9930114477,ORD2600822,CUST910174,Vikram Nair,9364557047,Kota,0,2,Address Incorrect,2026-08-05 11:29,address glt h sahi pincode 302001 h flat no 402
+BD9930114478,ORD2600959,CUST910203,Sandeep Gupta,9859152683,Lucknow,0,1,Address Incorrect,2026-08-05 11:40,ghar ka number likha hi nhi h isliye nhi mila hoga
+BD9930114479,ORD2601096,CUST910232,Anjali Joshi,9208497648,Jaipur,0,2,Address Incorrect,2026-08-05 11:55,mai b block me rehta hu wo d block chla gya
+XB2201948855,ORD2601233,CUST910261,Priya Yadav,9111762859,Patna,2450,1,Address Incorrect,2026-08-05 12:08,plz address change kr do office pe bhej dena
+XB2201948856,ORD2601370,CUST910290,Pooja Nair,9164310053,Indore,1299,1,Customer Not Available,2026-08-05 12:19,ab mera naya pta h 560037 wahan bhejna
+DT4417720066,ORD2601507,CUST910319,Karan Gupta,9599225355,Lucknow,3199,2,COD Not Ready,2026-08-05 12:33,cash nhi tha ghr pe online payment kr skta hu kya
+DT4417720067,ORD2601644,CUST910348,Karan Sharma,9955795335,Ajmer,2450,1,COD Not Ready,2026-08-05 12:44,itne paise nhi the abhi kal tk arrange kr lunga
+DT4417720068,ORD2601781,CUST910377,Shreya Verma,9622722529,Delhi,3199,3,COD Not Ready,2026-08-05 12:58,upi ka link bhej do mai abhi kr deta hu
+DL7742910086,ORD2601918,CUST910406,Priya Sharma,9290780434,Delhi,1750,1,Customer Not Available,2026-08-05 13:11,dlvry boy ne call hi ni kiya aur wapas le gya
+DL7742910087,ORD2602055,CUST910435,Kavita Singh,9832375074,Delhi,2450,1,Customer Not Available,2026-08-05 13:24,uska number switch off aa rha tha baat hi nhi hui
+DL7742910088,ORD2602192,CUST910464,Karan Sharma,9700538584,Pune,499,1,Customer Not Available,2026-08-05 13:37,bola gate pe aao mai 8th floor pe hu nhi aa ska
+EK5518203394,ORD2602329,CUST910493,Divya Khan,9302277356,Patna,0,2,Customer Not Available,2026-08-05 13:52,mai 10 din ke liye gaon gaya hu wapas aake btaunga
+EK5518203395,ORD2602466,CUST910522,Divya Yadav,9580418803,Pune,499,3,Customer Not Available,2026-08-05 14:03,abhi mumbai me hu 15 tarikh ko lautunga
+EK5518203396,ORD2602603,CUST910551,Kavita Joshi,9646390105,Jaipur,1299,1,Customer Not Available,2026-08-05 14:16,out of station hu abhi please hold kr lo
+BD9930114480,ORD2602740,CUST910580,Arjun Patel,9304745829,Patna,1750,2,Customer Refused,2026-08-05 14:28,mujhe ab ye nhi chahiye bhut late ho gya
+BD9930114481,ORD2602877,CUST910609,Manoj Sharma,9885865426,Indore,0,1,Customer Refused,2026-08-05 14:39,dusri site se sasta le liya wapas le jao
+BD9930114482,ORD2603014,CUST910638,Anjali Nair,9926267959,Indore,2450,3,Customer Refused,2026-08-05 14:51,galti se order ho gya tha nhi lena h
+XB2201948857,ORD2603151,CUST910667,Neha Reddy,9240624834,Patna,1299,1,Customer Refused,2026-08-05 15:04,plzzz cancle kr do mujhe nhi chahiye
+XB2201948858,ORD2603288,CUST910696,Ajay Verma,9550145315,Kota,1299,1,Customer Refused,2026-08-05 15:17,order cancel krke refund kr dijiye
+DT4417720069,ORD2603425,CUST910725,Neha Khan,9791183852,Mumbai,0,1,Customer Not Available,2026-08-05 15:29,mil gaya tha kal hi guard ke paas rkha tha
+DT4417720070,ORD2603562,CUST910754,Arjun Joshi,9512050349,Patna,0,1,Customer Not Available,2026-08-05 15:41,ye to already deliver ho chuka h status update kro
+DL7742910089,ORD2603699,CUST910783,Sandeep Sharma,9225099503,Kota,2450,1,Customer Not Available,2026-08-05 15:55,mai khud aake le lunga hub ka address bhej do
+DL7742910090,ORD2603836,CUST910812,Anjali Yadav,9523970576,Patna,3199,2,Customer Not Available,2026-08-05 16:08,aapka warehouse kaha h mai collect kr lunga
+EK5518203397,ORD2603973,CUST910841,Vikram Reddy,9551782903,Mumbai,1750,2,Customer Not Available,2026-08-05 16:20,कल शाम 6 बजे भेज दीजिए मेरा नंबर 9876543210 है
+EK5518203398,ORD2604110,CUST910870,Vikram Patel,9328562779,Ajmer,1299,1,Customer Not Available,2026-08-05 16:33,मुझे नहीं चाहिए वापस ले जाइए
+BD9930114483,ORD2604247,CUST910899,Pooja Verma,9100505635,Mumbai,0,3,Address Incorrect,2026-08-05 16:45,पता गलत लिखा है सही पिनकोड 110045 है
+XB2201948859,ORD2604384,CUST910928,Rohit Sharma,9389690146,Mumbai,0,1,Customer Not Available,2026-08-05 16:58,sunday ko rahunga tab de dena
+XB2201948860,ORD2604521,CUST910957,Kavita Singh,9962656529,Lucknow,499,3,Customer Not Available,2026-08-05 17:09,2 baje ke bad koshish kariye plz
+DT4417720071,ORD2604658,CUST910986,Priya Nair,9736450400,Pune,2450,3,Customer Not Available,2026-08-05 17:22,please deliver tomorrow evening
+DT4417720072,ORD2604795,CUST911015,Pooja Reddy,9426573362,Patna,899,3,Customer Not Available,2026-08-05 17:35,i was in office nobody was at home
+DL7742910091,ORD2604932,CUST911044,Farhan Verma,9121078319,Pune,499,1,Customer Not Available,2026-08-05 17:48,hmm ok
+DL7742910092,ORD2605069,CUST911073,Nisha Singh,9326248380,Pune,0,1,Customer Not Available,2026-08-05 17:59,kya
+EK5518203399,ORD2605206,CUST911102,Neha Khan,9301119745,Mumbai,899,1,Customer Not Available,2026-08-05 18:12,maine to koi order kiya hi nhi
+EK5518203400,ORD2605343,CUST911131,Anjali Patel,9523349167,Noida,499,1,Customer Not Available,2026-08-05 18:25,ji

@@ -1,0 +1,6 @@
+{
+  "n_rows": 19998,
+  "accuracy": 0.3293,
+  "macro_f1": 0.3292,
+  "split": "FRAME-DISJOINT SPLIT (honest) \u2014 train 11912, val 4105, test 3981"
+}
